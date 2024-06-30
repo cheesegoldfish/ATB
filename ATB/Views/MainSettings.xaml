@@ -19,6 +19,11 @@
                 <x:Type TypeName="enums:AutoTargetSelection" />
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+        <ObjectDataProvider MethodName="GetValues" ObjectType="{x:Type sys:Enum}" x:Key="AutoFollowSelection">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="enums:AutoFollowSelection" />
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
     </UserControl.Resources>
 
     <Grid Margin="10" HorizontalAlignment="Center">
