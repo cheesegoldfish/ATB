@@ -1,0 +1,44 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: test
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  smoke-test:
+    name: "Test"
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.5
+    - name: Restore NuGet packages
+      run: |
+        nuget restore ATB.sln
+    - name: Build solution
+      run: |
+        msbuild ATB.sln /p:Configuration=Release
+    - name: Generate Version.txt
+      run: echo "test-${{ github.run_number }}" > ./ATB/bin/release/Version.txt
+
+    - name: Create ATB.zip
+      run: |
+        powershell Compress-Archive -Path ./ATB/bin/release/ATB.dll, ./ATB/bin/release/Version.txt, ./ATBLoader/ATBLoader.cs -DestinationPath ./ATB/bin/release/ATB.zip
+
+    - name: Upload Artifacts for Release
+      uses: actions/upload-artifact@v2
+      with:
+        name: ATB.zip
+        path: ./ATB/bin/release/ATB.zip
+
+    - name: Upload Version.txt for Release
+      uses: actions/upload-artifact@v2
+      with:
+        name: Version.txt
+        path: ./ATB/bin/release/Version.txt

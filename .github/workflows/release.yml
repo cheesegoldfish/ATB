@@ -1,0 +1,54 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: release
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  release:
+    name: "Release"
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.5
+    - name: Restore NuGet packages
+      run: |
+        nuget restore ATB.sln
+    - name: Build solution
+      run: |
+        msbuild ATB.sln /p:Configuration=Release
+    - name: Generate Version.txt
+      run: echo "cg-${{ github.run_number }}" > ./ATB/bin/release/Version.txt
+
+    - name: Create ATB.zip
+      run: |
+        powershell Compress-Archive -Path ./ATB/bin/release/ATB.dll, ./ATB/bin/release/Version.txt, ./ATBLoader/ATBLoader.cs -DestinationPath ./ATB/bin/release/ATB.zip
+
+    - name: Upload Artifacts for Release
+      uses: actions/upload-artifact@v2
+      with:
+        name: ATB.zip
+        path: ./ATB/bin/release/ATB.zip
+
+    - name: Upload Version.txt for Release
+      uses: actions/upload-artifact@v2
+      with:
+        name: Version.txt
+        path: ./ATB/bin/release/Version.txt
+
+    - name: Create GitHub Release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        automatic_release_tag: "cg-${{ github.run_number }}"
+        files: |
+          ./ATB/bin/release/ATB.zip
+          ./ATB/bin/release/Version.txt
