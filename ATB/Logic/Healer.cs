@@ -49,7 +49,7 @@ namespace ATB.Logic
 
             if (PartyManager.IsInParty && MainSettingsModel.Instance.UseSmartPull)
             {
-                if (Me.CurrentTarget != null)
+                if (Me.CurrentTarget != null && TargetConverted && TargetingManager.IsValidEnemy(Core.Player.CurrentTarget))
                 {
                     var targetsTarget = ConvertedTarget().TargetGameObject;
                     var party = PartyManager.VisibleMembers;
