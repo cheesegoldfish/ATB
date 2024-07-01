@@ -51,7 +51,12 @@ namespace ATB.Logic
             {
                 if (Me.CurrentTarget != null)
                 {
-                    if (Target != null && TargetConverted && ConvertedTarget().Tapped && ConvertedTarget().TaggerType == 2)
+                    var targetsTarget = ConvertedTarget().TargetGameObject;
+                    var party = PartyManager.VisibleMembers;
+                    var tank = party.FirstOrDefault(x => PartyDescriptors.IsTank(x.Class))?.GameObject;
+                    var targetingParty = ((tank != null && targetsTarget == tank) || party.Any(x => x.GameObject == targetsTarget));
+
+                    if (Target != null && TargetConverted && targetingParty)
                     {
                         if (RoutineManager.Current.PullBuffBehavior != null && TargetingManager.IsValidEnemy(Core.Player.CurrentTarget))
                             await RoutineManager.Current.PullBuffBehavior.ExecuteCoroutine();
