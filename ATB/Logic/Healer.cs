@@ -61,7 +61,10 @@ namespace ATB.Logic
                         if (RoutineManager.Current.PullBuffBehavior != null && TargetingManager.IsValidEnemy(Core.Player.CurrentTarget))
                             await RoutineManager.Current.PullBuffBehavior.ExecuteCoroutine();
 
-                        if (RoutineManager.Current.PullBehavior != null && MainSettingsModel.Instance.UsePull && TargetingManager.IsValidEnemy(Core.Player.CurrentTarget) && Core.Player.CurrentTarget.Location.Distance3D(Core.Player.Location) <= RoutineManager.Current.PullRange + Core.Player.CurrentTarget.CombatReach)
+                        if (RoutineManager.Current.PullBehavior != null 
+                            && MainSettingsModel.Instance.UseSmartPull 
+                            && TargetingManager.IsValidEnemy(Core.Player.CurrentTarget) 
+                            && Core.Player.CurrentTarget.Location.Distance3D(Core.Player.Location) <= RoutineManager.Current.PullRange + Core.Player.CurrentTarget.CombatReach)
                             return await RoutineManager.Current.PullBehavior.ExecuteCoroutine();
                     }
                 }
