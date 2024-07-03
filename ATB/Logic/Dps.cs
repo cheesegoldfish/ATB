@@ -34,10 +34,6 @@ namespace ATB.Logic
                 return false;
             }
 
-            // Only pulse magitek if pve.
-            if (Me.InCombat && Target != null && Target.NpcId == 0)
-                return false;
-
             if (Me.InCombat || Target != null && TargetConverted && ConvertedTarget().TaggerType != 0)
                 return await BrainBehavior.CombatLogic.ExecuteCoroutine();
 

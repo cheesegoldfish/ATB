@@ -43,8 +43,15 @@ namespace ATB.Logic
                 }
             }
 
+            if (MainSettingsModel.Instance.AutoSprint && ActionManager.IsSprintReady && MovementManager.IsMoving)
+                ActionManager.Sprint();
+            
             if (MainSettingsModel.Instance.UseAutoTalk)
             {
+                if (Core.Me.IsAlive)
+                    if (SelectYesno.IsOpen)
+                        SelectYesno.ClickYes();
+
                 if (Talk.DialogOpen)
                     Talk.Next();
 

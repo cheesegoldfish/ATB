@@ -24,7 +24,8 @@ namespace ATB.Models
         }
 
         private bool _autoCommenceDuty, _autoDutyNotify, _usePull, _usePause, _useAutoFace, _useAutoTalk, _useAutoQuest, _useAutoCutscene, _useAutoTargeting,
-            _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning;
+            _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting,
+            _autoSprint;
 
         private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize;
 
@@ -108,6 +109,11 @@ namespace ATB.Models
         { get { return _useAutoTargeting; } set { _useAutoTargeting = value; OnPropertyChanged(); } }
 
         [Setting]
+        [DefaultValue(false)]
+        public bool UseStickyTargeting
+        { get { return _useStickyTargeting; } set { _useStickyTargeting = value; OnPropertyChanged(); } }
+
+        [Setting]
         [DefaultValue(true)]
         public bool UseSmartPull
         { get { return _useSmartPull; } set { _useSmartPull = value; OnPropertyChanged(); } }
@@ -161,6 +167,11 @@ namespace ATB.Models
         [DefaultValue(false)]
         public bool HideOverlayWhenRunning
         { get { return _hideOverlayWhenRunning; } set { _hideOverlayWhenRunning = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(false)]
+        public bool AutoSprint
+        { get { return _autoSprint; } set { _autoSprint = value; OnPropertyChanged(); } }
 
         [JsonIgnore]
         private List<string> _combatRoutineList;

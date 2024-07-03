@@ -60,6 +60,9 @@ namespace ATB.Utilities
             if (Core.Me.CurrentTarget.HasAnyAura(Invincibility))
                 Core.Me.ClearTarget();
 
+            if (MainSettingsModel.Instance.UseStickyTargeting && Core.Player.HasTarget)
+                return false;
+
             switch (MainSettingsModel.Instance.AutoTargetSelection)
             {
                 case AutoTargetSelection.NearestEnemy:
@@ -325,17 +328,17 @@ namespace ATB.Utilities
 
         public static bool IsTank(Character c)
         {
-            switch (c.CurrentJob)
-            {
-                case ClassJobType.Marauder:
-                case ClassJobType.Warrior:
-                case ClassJobType.Paladin:
-                case ClassJobType.Gladiator:
-                case ClassJobType.DarkKnight:
-                    return true;
 
-                default:
-                    return false;
+            try
+            {
+                BattleCharacter bc = (BattleCharacter)c;
+
+                return bc.IsTank();
+            }
+            catch (Exception ex)
+            {
+                //BadCasting this sux.
+                return false;
             }
         }
 
