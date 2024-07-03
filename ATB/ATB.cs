@@ -24,7 +24,7 @@ namespace ATB
         private ATBWindow _form;
         private static int _rbVersion;
         private static DateTime _pulseLimiter;
-        private static readonly string VersionPath = Path.Combine(Environment.CurrentDirectory, @"BotBases\ATB\version.txt");
+        private static readonly string VersionPath = Path.Combine(Environment.CurrentDirectory, @"BotBases\ATB\Version.txt");
 
         public ATB()
         {
@@ -37,7 +37,7 @@ namespace ATB
 
         public void OnInitialize(int version)
         {
-            Logger.ATBLog($"Initializing Version: {File.ReadAllText(VersionPath)}");
+            Logger.ATBLog($"Initializing Version: {File.ReadAllText(VersionPath).Trim()}");
 
             _rbVersion = version;
 

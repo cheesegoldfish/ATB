@@ -26,7 +26,7 @@ namespace ATBLoader
 
         private static readonly string ProjectAssembly = Path.Combine(Environment.CurrentDirectory, $@"BotBases\{ProjectName}\{ProjectAssemblyName}");
         private static readonly string GreyMagicAssembly = Path.Combine(Environment.CurrentDirectory, @"GreyMagic.dll");
-        private static readonly string VersionPath = Path.Combine(Environment.CurrentDirectory, $@"BotBases\{ProjectName}\version.txt");
+        private static readonly string VersionPath = Path.Combine(Environment.CurrentDirectory, $@"BotBases\{ProjectName}\Version.txt");
         private static readonly string BaseDir = Path.Combine(Environment.CurrentDirectory, $@"BotBases\{ProjectName}");
         private static readonly string ProjectTypeFolder = Path.Combine(Environment.CurrentDirectory, @"BotBases");
         private static string? _latestVersion;
@@ -179,7 +179,7 @@ namespace ATBLoader
 
             try
             {
-                var version = File.ReadAllText(VersionPath);
+                var version = File.ReadAllText(VersionPath).Trim();
                 return version;
             }
             catch
@@ -256,7 +256,7 @@ namespace ATBLoader
             string responseMessageBytes;
             try
             {
-                responseMessageBytes = await response.Content.ReadAsStringAsync();
+                responseMessageBytes = (await response.Content.ReadAsStringAsync()).Trim();
             }
             catch (Exception e)
             {
