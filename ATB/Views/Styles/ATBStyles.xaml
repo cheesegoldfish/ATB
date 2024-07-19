@@ -284,6 +284,13 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
+    <Style x:Key="ATBTextBlockSection" TargetType="{x:Type TextBlock}">
+        <Setter Property="FontFamily" Value="Segoe UI Symbol" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{DynamicResource Foreground}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
     <ControlTemplate x:Key="ATBTextBoxKey" TargetType="{x:Type TextBoxBase}">
         <Border Height="35" Background="{DynamicResource CheckboxBackground}" BorderBrush="{DynamicResource CheckboxBorder}" x:Name="Bd" BorderThickness="1" CornerRadius="5">
             <Grid>

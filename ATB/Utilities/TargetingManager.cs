@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using ATB.Utilities.Extensions;
 using TreeSharp;
 using static ATB.Utilities.Constants;
+using ff14bot.Helpers;
 
 namespace ATB.Utilities
 {
@@ -39,6 +40,13 @@ namespace ATB.Utilities
             Invincibility8
         };
 
+        public static readonly List<uint> Pvp_Invuln = new List<uint>
+        {
+            3054, // guard
+            1302, // hallowed
+            3039, // undead redemption
+        };
+
         private static readonly Composite TargetingManagerComposite;
         private static DateTime _pulseLimiter;
         private static DateTime lastTargetChange = DateTime.Now;
@@ -62,6 +70,77 @@ namespace ATB.Utilities
 
             if (MainSettingsModel.Instance.UseStickyTargeting && Core.Player.HasTarget)
                 return false;
+
+            if (WorldManager.InPvP)
+            {
+                if (MainSettingsModel.Instance.Pvp_DetargetInvuln && Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln))
+                    Core.Me.ClearTarget();
+
+                if (MainSettingsModel.Instance.Pvp_SmartTargeting)
+                {
+                    var objs = GameObjectManager.GameObjects.Where(o =>
+                        IsValidEnemy(o)
+                        && ((Character)o).InCombat
+                        && Core.Player.Location.Distance3D(o.Location) <= MainSettingsModel.Instance.MaxTargetDistance
+                        && o.InLineOfSight()
+                        && !o.HasAnyAura(Pvp_Invuln)
+                    );
+
+                    if (objs != null && objs.Any())
+                    {
+                        var lowestHpTargets = objs
+                            .OrderByDescending(o => o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
+                            .ThenBy(o => o.CurrentHealthPercent)
+                            .Where(o => o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp);
+
+                        GameObject newTarget;
+                        String type;
+                        int ChangeThreshold;
+
+                        if (lowestHpTargets.Any())
+                        {
+                            newTarget = lowestHpTargets.First();
+                            type = "Lowest HP " + newTarget.CurrentHealthPercent;
+                            ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness / 2 * 1000;
+                        }
+                        else
+                        {
+                            var allies = _allianceMembers.Value;
+                            var mostTargetedTargets = objs
+                                .OrderByDescending(o => allies.Where(a => a.CurrentTargetId == o.ObjectId).Count())
+                                .ThenBy(o => o.CurrentHealthPercent);
+
+                            newTarget = mostTargetedTargets.FirstOrDefault();
+                            type = "Most Targeted " + allies.Where(a => a.CurrentTargetId == newTarget.ObjectId).Count();
+                            ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness * 1000;
+                        }
+
+                        if (newTarget != null)
+                        {
+                            if (newTarget != Me.CurrentTarget
+                                && (
+                                    // Sticky for enough burst
+                                    lastTargetChange.AddMilliseconds(ChangeThreshold) < DateTime.Now
+                                    // Or I don't have a target
+                                    || !Core.Me.HasTarget
+                                    // Or my target is in sight anymore
+                                    || !Me.CurrentTarget.InLineOfSight()
+                                    // Or my target walked out of range
+                                    || Core.Me.Location.Distance3D(Me.CurrentTarget.Location) >= MainSettingsModel.Instance.MaxTargetDistance + 1
+                                )
+                            )
+                            {
+                                newTarget.Target();
+                                lastTargetChange = DateTime.Now;
+                                //Logger.ATBLog("PvP Smart Targeting: " + type + " Target Change!");
+                            }
+                        }
+                    }
+                    
+                    return false;
+                }
+            }
+
 
             switch (MainSettingsModel.Instance.AutoTargetSelection)
             {
@@ -140,14 +219,14 @@ namespace ATB.Utilities
                         if (objs != null && objs.Any())
                         {
                             var targets = objs
-                                .OrderByDescending(o => o.IsDps() || o.CurrentHealthPercent <= .25)
+                                .OrderByDescending(o => o.IsDps() || o.CurrentHealthPercent <= 25)
                                 .ThenBy(o => o.CurrentHealthPercent);
                             var newTarget = targets
                                 .First();
                             if (newTarget != Me.CurrentTarget
                                 && (
                                     // Sticky for enough burst
-                                    lastTargetChange.AddSeconds(10) < DateTime.Now
+                                    lastTargetChange.AddSeconds(7) < DateTime.Now
                                     // Or I don't have a target
                                     || !Core.Player.HasTarget
                                     // Or my target is in sight anymore
@@ -157,14 +236,14 @@ namespace ATB.Utilities
                                 )
                             )
                             {
-                                Logger.ATBLog($"Lowest Current HP Target Change!");
+                                // Logger.ATBLog($"Lowest Current HP Target Change!");
                                 /*if (Core.Player.Location.Distance3D(Me.CurrentTarget.Location) >= MainSettingsModel.Instance.MaxTargetDistance + 3)
                                 {
                                     Logger.ATBLog("Current target walked out of range.");
                                 }*/
-                                foreach (var i in targets.ToArray()) {
-                                    Logger.ATBLog($"{i.Name}. DPS: {i.IsDps()}. HP: {i.CurrentHealthPercent}. LOS: {i.InLineOfSight()}. Dist: {Core.Player.Location.Distance3D(i.Location)}");
-                                }
+                                //foreach (var i in targets.ToArray()) {
+                                //    Logger.ATBLog($"{i.Name}. DPS: {i.IsDps()}. HP: {i.CurrentHealthPercent}. LOS: {i.InLineOfSight()}. Dist: {Core.Player.Location.Distance3D(i.Location)}");
+                                //}
                                 newTarget.Target();
                                 lastTargetChange = DateTime.Now;
                             }
@@ -390,13 +469,31 @@ namespace ATB.Utilities
                 && !c.IsDead
                 && c.IsValid
                 && c.IsTargetable
-                && c.IsVisible 
+                && c.IsVisible
+                && c.InLineOfSight()
                 && c.CanAttack 
                 && !c.HasAnyAura(Invincibility)
                 && !c.Name.Contains("Raven")
                 && !c.Name.Contains("Falcon") 
                 && !c.Name.Contains("Striking Dummy");
         }
+
+        public static bool IsValidAlly(GameObject obj)
+        {
+            if (!(obj is Character))
+                return false;
+            var c = (Character)obj;
+            return !c.IsMe 
+                && !c.IsDead
+                && c.IsValid
+                && c.IsTargetable
+                && c.IsVisible 
+                && !c.CanAttack
+                && c.InLineOfSight()
+                && c.Type == GameObjectType.Pc;
+        }
+
+        private static readonly FrameCachedObject<IEnumerable<Character>> _allianceMembers = new(() => GameObjectManager.GetObjectsOfType<BattleCharacter>().Where(i => i != null && i.IsValid).Where(IsValidAlly));
 
         public static bool PulseCheck()
         {

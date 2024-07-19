@@ -7,7 +7,8 @@
              xmlns:controls="clr-namespace:ATB.Controls"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:enums="clr-namespace:ATB.Models"
-             mc:Ignorable="d">
+             mc:Ignorable="d"
+             Background="{DynamicResource Background}">
 
     <UserControl.DataContext>
         <viewModels:SettingsViewModel />
@@ -58,8 +59,17 @@
                     <controls:ATBNumeric Margin="2" HorizontalAlignment="Left" Width="260" MinValue="0" MaxValue="5000" TextBlockValue="Auto Commence Delay:" Value="{Binding Settings.AutoCommenceDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <controls:ATBNumeric Margin="2" HorizontalAlignment="Left" Width="260" MinValue="0" MaxValue="240" TextBlockValue="TPS Adjust" Value="{Binding Settings.TpsAdjust, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <ComboBox Tag="Auto-Target Selection" Margin="2" Style="{DynamicResource ATBComboBox}" SelectedItem="{Binding Settings.AutoTargetSelection, UpdateSourceTrigger=LostFocus}" ItemsSource="{Binding Source={StaticResource AutoTargetSelection}}" HorizontalAlignment="Left" Width="260" />
-                    <Button Content="Change Combat Routine" Click="LaunchRoutineSelect" HorizontalAlignment="Center" VerticalAlignment="Top" Width="145" Margin="0,5,0,0" />
-                    <ComboBox Tag="Auto-Follow Selection" Margin="2" Style="{DynamicResource ATBComboBox}" SelectedItem="{Binding Settings.AutoFollowSelection, UpdateSourceTrigger=LostFocus}" ItemsSource="{Binding Source={StaticResource AutoFollowSelection}}" HorizontalAlignment="Left" Width="260" />
+<!--                    <Button Content="Change Combat Routine" Click="LaunchRoutineSelect" HorizontalAlignment="Center" VerticalAlignment="Top" Width="145" Margin="0,5,0,0" />-->
+<!--                    <ComboBox Tag="Auto-Follow Selection" Margin="2" Style="{DynamicResource ATBComboBox}" SelectedItem="{Binding Settings.AutoFollowSelection, UpdateSourceTrigger=LostFocus}" ItemsSource="{Binding Source={StaticResource AutoFollowSelection}}" HorizontalAlignment="Left" Width="260" />
+                    -->
+                    <StackPanel Margin="5">
+                        <Separator Style="{DynamicResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,5" />
+                        <TextBlock Style="{DynamicResource ATBTextBlockSection}" Text="PvP" Margin="0,5" />
+                        <CheckBox Content="De-Target Invuln (guard,hallow,dead) " Margin="1,1,1.4,1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.Pvp_DetargetInvuln, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <CheckBox Content="Use PVP Smart Targeting " Margin="1,1,1.4,1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.Pvp_SmartTargeting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <controls:ATBNumeric Margin="2" HorizontalAlignment="Left" Width="260" MinValue="0" MaxValue="100" TextBlockValue="Low HP Priority" Value="{Binding Settings.Pvp_SmartTargetingHp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <controls:ATBNumeric Margin="2" HorizontalAlignment="Left" Width="260" MinValue="0" MaxValue="100" TextBlockValue="Target Stickiness" Value="{Binding Settings.Pvp_Stickiness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </StackPanel>

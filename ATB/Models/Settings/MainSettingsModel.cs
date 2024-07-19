@@ -25,13 +25,33 @@ namespace ATB.Models
 
         private bool _autoCommenceDuty, _autoDutyNotify, _usePull, _usePause, _useAutoFace, _useAutoTalk, _useAutoQuest, _useAutoCutscene, _useAutoTargeting,
             _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting,
-            _autoSprint;
+            _autoSprint, _pvpDetargetInvuln, _pvpSmartTargeting;
 
-        private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize;
+        private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness;
 
         private double _overlayWidth, _overlayHeight, _overlayX, _overlayY, _overlayOpacity;
 
         private float _maxTargetDistance;
+
+        [Setting]
+        [DefaultValue(true)]
+        public bool Pvp_DetargetInvuln
+        { get { return _pvpDetargetInvuln; } set { _pvpDetargetInvuln = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(true)]
+        public bool Pvp_SmartTargeting
+        { get { return _pvpSmartTargeting; } set { _pvpSmartTargeting = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(20)]
+        public int Pvp_SmartTargetingHp
+        { get { return _pvpSmartTargetingHp; } set { _pvpSmartTargetingHp = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(7)]
+        public int Pvp_Stickiness
+        { get { return _pvpStickiness; } set { _pvpStickiness = value; OnPropertyChanged(); } }
 
         [Setting]
         [DefaultValue(false)]

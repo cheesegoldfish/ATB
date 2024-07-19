@@ -3,6 +3,8 @@
 
     <SolidColorBrush x:Key="Background" Color="#FF1D1D1D" />
 
+    <SolidColorBrush x:Key="BackgroundSection" Color="#FFaaaaaa" />
+
     <!-- Font -->
     <SolidColorBrush x:Key="Foreground" Color="White" />
 

@@ -16,7 +16,7 @@ and I would rather have Dalamud do those things and get a good and fast lightwei
 
 ATB is a precompiled routine, which is different than some others. In order to get started as a user, follow these steps.
 
-1. Download the [latest version](https://github.com/cheeseoldfish/ATB/releases/latest/download/ATB.zip).
+1. Download the [latest version](https://github.com/cheesegoldfish/ATB/releases/latest/download/ATB.zip).
 2. Right click the zip, select properties, and check the "Unblock" option. This is necessary because the zip file includes a dll.
 3. Unzip into your `RebornBuddy\BotBases` folder.
 
@@ -24,7 +24,7 @@ ATB is a precompiled routine, which is different than some others. In order to g
 
 You probably also want a way to always use Magitek instead of having to pick the Routine every time you switch classes.
 
-There are lots of options for this maintained by the community.
+There are lots of options for this maintained by the community. You can use **SeleCR** which is bundled with UpdateBuddy, or you can use a plugin like **ForceMagitek**.
 
 For convenience here is a ForceMagitek plugin that will automatically choose Magitek for you for every class. 
 
