@@ -106,12 +106,26 @@ namespace ATB.Utilities
                         else
                         {
                             var allies = _allianceMembers.Value;
+                            var targetCounts = new Dictionary<uint, int>();
+
+                            foreach (var ally in allies)
+                            {
+                                if (targetCounts.ContainsKey(ally.CurrentTargetId))
+                                {
+                                    targetCounts[ally.CurrentTargetId]++;
+                                }
+                                else
+                                {
+                                    targetCounts[ally.CurrentTargetId] = 1;
+                                }
+                            }
+
                             var mostTargetedTargets = objs
-                                .OrderByDescending(o => allies.Where(a => a.CurrentTargetId == o.ObjectId).Count())
+                                .OrderByDescending(o => targetCounts.TryGetValue(o.ObjectId, out var count) ? count : 0)
                                 .ThenBy(o => o.CurrentHealthPercent);
 
                             newTarget = mostTargetedTargets.FirstOrDefault();
-                            type = "Most Targeted " + allies.Where(a => a.CurrentTargetId == newTarget.ObjectId).Count();
+                            type = "Most Targeted " + (targetCounts.TryGetValue(newTarget.ObjectId, out var count) ? count : 0);
                             ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness * 1000;
                         }
 
