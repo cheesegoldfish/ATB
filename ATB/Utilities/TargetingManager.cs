@@ -85,7 +85,7 @@ namespace ATB.Utilities
         {
             if (!MainSettingsModel.Instance.UseAutoTargeting || MainSettingsModel.Instance.AutoTargetSelection == AutoTargetSelection.None) return false;
 
-            if (Core.Me.CurrentTarget.HasAnyAura(Invincibility))
+            if (Core.Me.CurrentTarget.HasAnyAura(Invincibility) && Core.Me.InCombat)
                 Core.Me.ClearTarget();
 
             if (MainSettingsModel.Instance.UseStickyAuraTargeting
@@ -97,7 +97,7 @@ namespace ATB.Utilities
 
             if (WorldManager.InPvP)
             {
-                if (MainSettingsModel.Instance.Pvp_DetargetInvuln && Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln))
+                if (MainSettingsModel.Instance.Pvp_DetargetInvuln && Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln) && Core.Me.InCombat)
                     Core.Me.ClearTarget();
 
                 if (MainSettingsModel.Instance.UseStickyAuraTargeting
