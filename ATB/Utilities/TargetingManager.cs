@@ -25,7 +25,8 @@ namespace ATB.Utilities
             Invincibility5 = 671,
             Invincibility6 = 656,
             Invincibility7 = 529,
-            Invincibility8 = 325;
+            Invincibility8 = 325,
+            Invincibility9 = 394;
 
         public static readonly List<uint> Invincibility = new List<uint>
         {
@@ -37,7 +38,8 @@ namespace ATB.Utilities
             Invincibility5,
             Invincibility6,
             Invincibility7,
-            Invincibility8
+            Invincibility8,
+            Invincibility9
         };
 
         public static readonly List<uint> Pvp_Invuln = new List<uint>
@@ -46,6 +48,24 @@ namespace ATB.Utilities
             1302, // hallowed
             3039, // undead redemption
         };
+
+        public static readonly HashSet<string> StickyAuras = new HashSet<string> {
+            "wildfire",
+        };
+
+        public static readonly HashSet<string> Pvp_StickyAuras = new HashSet<string> {
+            "wildfire",
+            "clawed muse",
+            "fanged muse",
+            "bind",
+            "stun",
+            "heavy",
+            "silence",
+            "deep freeze"
+        };
+
+        public static readonly string StickyAurasString = string.Join(",", StickyAuras);
+        public static readonly string Pvp_StickyAurasString = string.Join(",", Pvp_StickyAuras);
 
         private static readonly Composite TargetingManagerComposite;
         private static DateTime _pulseLimiter;
@@ -68,6 +88,10 @@ namespace ATB.Utilities
             if (Core.Me.CurrentTarget.HasAnyAura(Invincibility))
                 Core.Me.ClearTarget();
 
+            if (MainSettingsModel.Instance.UseStickyAuraTargeting
+                && Core.Me.CurrentTarget.HasAnyAura(StickyAuras, true))
+                return false;
+
             if (MainSettingsModel.Instance.UseStickyTargeting && Core.Player.HasTarget)
                 return false;
 
@@ -75,6 +99,10 @@ namespace ATB.Utilities
             {
                 if (MainSettingsModel.Instance.Pvp_DetargetInvuln && Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln))
                     Core.Me.ClearTarget();
+
+                if (MainSettingsModel.Instance.UseStickyAuraTargeting
+                    && Core.Me.CurrentTarget.HasAnyAura(Pvp_StickyAuras, true))
+                    return false;
 
                 if (MainSettingsModel.Instance.Pvp_SmartTargeting)
                 {
@@ -90,7 +118,7 @@ namespace ATB.Utilities
                     {
                         var lowestHpTargets = objs
                             .OrderByDescending(o => o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
-                            .ThenBy(o => o.CurrentHealthPercent)
+                            .ThenBy(o => o.CurrentHealth)
                             .Where(o => o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp);
 
                         GameObject newTarget;
@@ -120,9 +148,15 @@ namespace ATB.Utilities
                                 }
                             }
 
+                            // prioritize things i've debuffed already
+                            // then things the team has debuffed
+                            // then by who has the most targets
+                            // then by lowest hp
                             var mostTargetedTargets = objs
-                                .OrderByDescending(o => targetCounts.TryGetValue(o.ObjectId, out var count) ? count : 0)
-                                .ThenBy(o => o.CurrentHealthPercent);
+                                .OrderByDescending(o => o.CountDebuffs(true))
+                                .ThenByDescending(o => o.CountDebuffs(false))
+                                .ThenByDescending(o => targetCounts.TryGetValue(o.ObjectId, out var count) ? count : 0)
+                                .ThenBy(o => o.CurrentHealth);
 
                             newTarget = mostTargetedTargets.FirstOrDefault();
                             type = "Most Targeted " + (targetCounts.TryGetValue(newTarget.ObjectId, out var count) ? count : 0);
@@ -489,7 +523,8 @@ namespace ATB.Utilities
                 && !c.HasAnyAura(Invincibility)
                 && !c.Name.Contains("Raven")
                 && !c.Name.Contains("Falcon") 
-                && !c.Name.Contains("Striking Dummy");
+                && !c.Name.Contains("Striking Dummy")
+                && !c.Name.Contains("Icebound Tomelith");
         }
 
         public static bool IsValidAlly(GameObject obj)

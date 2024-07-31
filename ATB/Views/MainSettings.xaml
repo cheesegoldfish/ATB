@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:ATB.ViewModels"
              xmlns:controls="clr-namespace:ATB.Controls"
+             xmlns:utils="clr-namespace:ATB.Utilities"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:enums="clr-namespace:ATB.Models"
              mc:Ignorable="d"
@@ -40,8 +41,6 @@
                     <CheckBox Content="Smart Pull" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseSmartPull, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <CheckBox Content="Auto-Face" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseAutoFace, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <CheckBox Content="Auto-Dialog" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseAutoTalk, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <CheckBox Content="Auto-Target" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseAutoTargeting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <CheckBox Content="Sticky-Target" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseStickyTargeting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <!--<CheckBox Content="Auto-TPS Adjust" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseAutoTpsAdjust, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->
                     <CheckBox Content="Enable Overlay" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Command="{Binding OverlayViewUpdate}" />
                     <CheckBox Content="Output to Chatbox" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseOutputToEcho, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -62,6 +61,13 @@
 <!--                    <Button Content="Change Combat Routine" Click="LaunchRoutineSelect" HorizontalAlignment="Center" VerticalAlignment="Top" Width="145" Margin="0,5,0,0" />-->
 <!--                    <ComboBox Tag="Auto-Follow Selection" Margin="2" Style="{DynamicResource ATBComboBox}" SelectedItem="{Binding Settings.AutoFollowSelection, UpdateSourceTrigger=LostFocus}" ItemsSource="{Binding Source={StaticResource AutoFollowSelection}}" HorizontalAlignment="Left" Width="260" />
                     -->
+                    <CheckBox Content="Auto-Target" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseAutoTargeting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <CheckBox Content="Sticky-Target [keep current target]" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseStickyTargeting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Style="{DynamicResource ATBTextBlockSectionRegular}" Text="Don't change targets unless target is invalid" Margin="0,5" />
+                    <CheckBox Content="Sticky-Aura-Target" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseStickyAuraTargeting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Style="{DynamicResource ATBTextBlockSectionRegular}" Text="Stick to target if it contains specific auras:" Margin="0,5" />
+                    <TextBlock Style="{DynamicResource ATBTextBlockSectionRegular}" Text="{x:Static utils:TargetingManager.StickyAurasString}" Margin="0,5" TextWrapping="Wrap" />
+                    
                     <StackPanel Margin="5">
                         <Separator Style="{DynamicResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,5" />
                         <TextBlock Style="{DynamicResource ATBTextBlockSection}" Text="PvP" Margin="0,5" />
@@ -69,6 +75,8 @@
                         <CheckBox Content="Use PVP Smart Targeting " Margin="1,1,1.4,1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.Pvp_SmartTargeting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <controls:ATBNumeric Margin="2" HorizontalAlignment="Left" Width="260" MinValue="0" MaxValue="100" TextBlockValue="Low HP Priority" Value="{Binding Settings.Pvp_SmartTargetingHp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <controls:ATBNumeric Margin="2" HorizontalAlignment="Left" Width="260" MinValue="0" MaxValue="100" TextBlockValue="Target Stickiness" Value="{Binding Settings.Pvp_Stickiness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Style="{DynamicResource ATBTextBlockSectionRegular}" Text="PVP specific sticky auras:" Margin="0,5" />
+                        <TextBlock Style="{DynamicResource ATBTextBlockSectionRegular}" Text="{x:Static utils:TargetingManager.Pvp_StickyAurasString}" Margin="0,5" TextWrapping="Wrap" />
                     </StackPanel>
                 </StackPanel>
             </Grid>

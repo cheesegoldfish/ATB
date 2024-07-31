@@ -24,7 +24,7 @@ namespace ATB.Models
         }
 
         private bool _autoCommenceDuty, _autoDutyNotify, _usePull, _usePause, _useAutoFace, _useAutoTalk, _useAutoQuest, _useAutoCutscene, _useAutoTargeting,
-            _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting,
+            _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting, _useStickyAuraTargeting,
             _autoSprint, _pvpDetargetInvuln, _pvpSmartTargeting;
 
         private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness;
@@ -132,6 +132,11 @@ namespace ATB.Models
         [DefaultValue(false)]
         public bool UseStickyTargeting
         { get { return _useStickyTargeting; } set { _useStickyTargeting = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(true)]
+        public bool UseStickyAuraTargeting
+        { get { return _useStickyAuraTargeting; } set { _useStickyAuraTargeting = value; OnPropertyChanged(); } }
 
         [Setting]
         [DefaultValue(true)]

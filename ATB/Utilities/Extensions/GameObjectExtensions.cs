@@ -55,7 +55,7 @@ namespace ATB.Utilities.Extensions
             return auras.Any(aura => aura.TimespanLeft.TotalMilliseconds >= msLeft);
         }
 
-        internal static bool HasAnyAura(this GameObject unit, List<uint> auras)
+        internal static bool HasAnyAuraOfMine(this GameObject unit)
         {
             var unitasc = unit as Character;
 
@@ -64,7 +64,51 @@ namespace ATB.Utilities.Extensions
                 return false;
             }
 
-            return unitasc.CharacterAuras.Any(r => auras.Contains(r.Id));
+            var auras = unitasc.CharacterAuras.Where(r => r.CasterId == Me.ObjectId);
+
+            return auras.Any();
+        }
+
+        internal static bool HasAnyAura(this GameObject unit, List<uint> auras, bool isMyAura = false)
+        {
+            var unitasc = unit as Character;
+
+            if (unit == null || unitasc == null || !unitasc.IsValid)
+            {
+                return false;
+            }
+
+            return isMyAura
+                ? unitasc.CharacterAuras.Any(r => auras.Contains(r.Id) && r.CasterId == Me.ObjectId)
+                : unitasc.CharacterAuras.Any(r => auras.Contains(r.Id));
+        }
+
+        internal static bool HasAnyAura(this GameObject unit, HashSet<string> auras, bool isMyAura = false)
+        {
+            var unitasc = unit as Character;
+
+            if (unit == null || unitasc == null || !unitasc.IsValid)
+            {
+                return false;
+            }
+
+            return isMyAura
+                ? unitasc.CharacterAuras.Any(r => auras.Contains(r.Name.ToLower()) && r.CasterId == Me.ObjectId)
+                : unitasc.CharacterAuras.Any(r => auras.Contains(r.Name.ToLower()));
+        }
+
+        internal static int CountDebuffs(this GameObject unit, bool isMyAura = false)
+        {
+            var unitasc = unit as Character;
+
+            if (unit == null || unitasc == null || !unitasc.IsValid)
+            {
+                return 0;
+            }
+
+            return isMyAura
+                ? unitasc.CharacterAuras.Count(r => r.IsDebuff && r.CasterId == Me.ObjectId)
+                : unitasc.CharacterAuras.Count(r => r.IsDebuff);
         }
 
         public static bool IsPlayer(this GameObject tar)
