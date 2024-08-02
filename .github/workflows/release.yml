@@ -24,16 +24,21 @@ jobs:
 
     - name: Generate version string
       id: generate_version
-      run: echo "VERSION=1.0.${{ github.run_number }}.0" >> $GITHUB_OUTPUT
+      run: echo "VERSION=1.0.${{ github.run_number }}.0" >> $GITHUB_ENV
 
     - name: Update AssemblyInfo
       run: |
-        $version = "${{ steps.generate_version.outputs.VERSION }}"
+        $version = $env:VERSION
         $assemblyInfoPath = "ATB/Properties/AssemblyInfo.cs"
-        $newContent = (Get-Content $assemblyInfoPath) -replace '(\[assembly: (AssemblyVersion|AssemblyFileVersion)\(")[^"]*("\)\])', "`$1$version`$3"
-        $newContent | Set-Content $assemblyInfoPath
-        Write-Host "New contents of AssemblyInfo.cs:"
-        Get-Content $assemblyInfoPath
+        (Get-Content $assemblyInfoPath) -replace '(\[assembly: AssemblyVersion\(")[^"]*("\)\])', "`$1$version`$2" | Set-Content $assemblyInfoPath
+        (Get-Content $assemblyInfoPath) -replace '(\[assembly: AssemblyFileVersion\(")[^"]*("\)\])', "`$1$version`$2" | Set-Content $assemblyInfoPath
+      env:
+        VERSION: ${{ env.VERSION }}
+
+    - name: Verify AssemblyInfo
+      run: |
+        Write-Host "Contents of AssemblyInfo.cs after replacement:"
+        Get-Content "ATB/Properties/AssemblyInfo.cs"
 
     - name: Build solution
       run: |
