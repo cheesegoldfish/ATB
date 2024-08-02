@@ -10,6 +10,8 @@ and I would rather have Dalamud do those things and get a good and fast lightwei
 1. Working SmartPull
 1. Added Best Clustered target selection for selecting the best mob for AOE.
 1. Doesn't target things in PVP that shouldn't generally be targeted automatically like Mammets.
+1. Smart Pvp targeting options.
+1. Targeting logic that is integrated with Magitek (so it doesn't do things like change target after casting Wildfire). 
 
 
 ## Installation
