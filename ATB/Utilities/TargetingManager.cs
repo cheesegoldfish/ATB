@@ -218,7 +218,7 @@ namespace ATB.Utilities
                         {
                             var targets = objs.OrderBy(t =>
                                 objs.Sum(ot => t.Distance(ot))
-                            ).ThenBy(Core.Me.Distance));
+                            ).ThenBy(Core.Me.Distance);
                             var newTarget = targets.First();
                             if (newTarget != Me.CurrentTarget)
                             {
