@@ -26,6 +26,9 @@ jobs:
       id: generate_version
       run: echo "VERSION=1.0.${{ github.run_number }}.0" >> $GITHUB_ENV
 
+    - name: Verify version string
+      run: echo "Version is ${{ env.VERSION }}"
+
     - name: Update AssemblyInfo
       run: |
         $version = $env:VERSION
