@@ -54,14 +54,12 @@ jobs:
         powershell Compress-Archive -Path ./ATB/bin/release/ATB.dll, ./ATB/bin/release/Version.txt, ./ATBLoader/ATBLoader.cs -DestinationPath ./ATB/bin/release/ATB.zip
         Add-Type -AssemblyName System.IO.Compression.FileSystem
 
-        $tempDir = "temp_zip"
-        mkdir $tempDir
-        mkdir "$tempDir/Properties"
-        Copy-Item -Path ./ATB/Properties/AssemblyInfo.cs -Destination "$tempDir/Properties"
-        # Create the zip archive
-        [System.IO.Compression.ZipFile]::CreateFromDirectory($tempDir, "./ATB/bin/release/ATB.zip")
-        # Clean up the temporary directory
-        Remove-Item $tempDir -Recurse -Force
+        $zipPath = "./ATB/bin/release/ATB.zip"
+        $fileToAdd = "./ATB/Properties/AssemblyInfo.cs"
+        $entryName = "Properties/AssemblyInfo.cs"
+    
+        # Open the zip file and add the specific file
+        [System.IO.Compression.ZipFile]::Open($zipPath, [System.IO.Compression.ZipArchiveMode]::Update).Entries.Add($fileToAdd, $entryName)
 
     - name: Upload Artifacts for Release
       uses: actions/upload-artifact@v4
