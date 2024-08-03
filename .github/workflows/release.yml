@@ -51,12 +51,7 @@ jobs:
 
     - name: Create ATB.zip
       run: |
-        $files = @(
-          "./ATB/bin/release/ATB.dll",
-          "./ATB/bin/release/Version.txt",
-          "./ATB/ATBLoader.cs"
-        )
-        Compress-Archive -Path $files -DestinationPath ./ATB/bin/release/ATB.zip
+        powershell Compress-Archive -Path ./ATB/bin/release/ATB.dll, ./ATB/bin/release/Version.txt, ./ATBLoader/ATBLoader.cs -DestinationPath ./ATB/bin/release/ATB.zip
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [System.IO.Compression.ZipFile]::CreateFromDirectory("ATB/Properties", "./ATB/bin/release/ATB.zip", "Properties")
 
