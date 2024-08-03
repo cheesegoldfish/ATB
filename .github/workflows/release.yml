@@ -18,6 +18,14 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.1.0
 
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: pip install zipfile36
+
     - name: Restore NuGet packages
       run: |
         nuget restore ATB.sln
@@ -51,15 +59,20 @@ jobs:
 
     - name: Create ATB.zip
       run: |
-        powershell Compress-Archive -Path ./ATB/bin/release/ATB.dll, ./ATB/bin/release/Version.txt, ./ATBLoader/ATBLoader.cs -DestinationPath ./ATB/bin/release/ATB.zip
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        python -c "
+        import os
+        import zipfile
 
-        $zipPath = "./ATB/bin/release/ATB.zip"
-        $fileToAdd = "./ATB/Properties/AssemblyInfo.cs"
-        $entryName = "Properties/AssemblyInfo.cs"
-    
-        # Open the zip file and add the specific file
-        [System.IO.Compression.ZipFile]::Open($zipPath, [System.IO.Compression.ZipArchiveMode]::Update).Entries.Add($fileToAdd, $entryName)
+        # Define paths
+        zip_path = './ATB/bin/release/ATB.zip'
+
+        # Step 1: Create initial zip archive with the specified files
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            zipf.write('./ATB/bin/release/ATB.dll', arcname='ATB.dll')
+            zipf.write('./ATB/bin/release/Version.txt', arcname='Version.txt')
+            zipf.write('./ATBLoader/ATBLoader.cs', arcname='ATBLoader.cs')
+            zipf.write('./ATB/Properties/AssemblyInfo.cs', arcname='Properties/AssemblyInfo.cs')
+        "
 
     - name: Upload Artifacts for Release
       uses: actions/upload-artifact@v4
