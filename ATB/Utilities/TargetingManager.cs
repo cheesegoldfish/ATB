@@ -102,6 +102,18 @@ namespace ATB.Utilities
 
                 if (MainSettingsModel.Instance.Pvp_SmartTargeting)
                 {
+                    if (PartyDescriptors.IsMelee(Core.Me.CurrentJob) && Core.Me.HasTarget)
+                    {
+                        // Stick to current target if melee
+                        if (Core.Me.CurrentTarget.Distance(Core.Me) < MainSettingsModel.Instance.MaxTargetDistance / 2
+                            && IsValidEnemy(Core.Me.CurrentTarget)
+                            && Core.Me.CurrentTarget.InLineOfSight()
+                            && !Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln))
+                        {
+                            return false;
+                        }
+                    }
+
                     var objs = GameObjectManager.GameObjects.Where(o =>
                         IsValidEnemy(o)
                         && ((Character)o).InCombat

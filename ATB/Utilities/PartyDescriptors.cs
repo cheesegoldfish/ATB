@@ -52,6 +52,49 @@ namespace ATB.Utilities
             }
         }
 
+        public static bool IsMelee(ClassJobType c)
+        {
+            if (IsTank(c))
+                return true;
+
+            switch (c)
+            {
+                case ClassJobType.Adventurer:
+                case ClassJobType.Dragoon:
+                case ClassJobType.Monk:
+                case ClassJobType.Ninja:
+                case ClassJobType.Samurai:
+                case ClassJobType.Reaper:
+                case ClassJobType.Viper:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        public static bool IsRanged(ClassJobType c)
+        {
+            if (IsHealer(c))
+                return true;
+
+            switch (c)
+            {
+                case ClassJobType.Adventurer:
+                case ClassJobType.Bard:
+                case ClassJobType.BlackMage:
+                case ClassJobType.Machinist:
+                case ClassJobType.Summoner:
+                case ClassJobType.RedMage:
+                case ClassJobType.Dancer:
+                case ClassJobType.Pictomancer:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
         public static bool IsHealer(ClassJobType c)
         {
             switch (c)

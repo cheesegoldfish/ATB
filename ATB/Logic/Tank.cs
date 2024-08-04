@@ -32,7 +32,7 @@ namespace ATB.Logic
                 return false;
             }
 
-            if (Me.InCombat || Target != null && TargetConverted && ConvertedTarget().TaggerType != 0)
+            if (Me.InCombat || (WorldManager.InPvP && WorldManager.ZoneId != 250) || Target != null && TargetConverted && ConvertedTarget().TaggerType != 0)
                 return await BrainBehavior.CombatLogic.ExecuteCoroutine();
 
             if (!Me.InCombat)
