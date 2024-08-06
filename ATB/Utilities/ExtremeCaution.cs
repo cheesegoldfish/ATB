@@ -45,7 +45,7 @@ namespace ATB.Utilities
                     return false;
                 }
 
-            if (Me.CharacterAuras.Any(aura => StopActionSpellList.Contains(aura.Id)))
+            if (Me.CharacterAuras.Any(aura => StopActionSpellList.Contains(aura.Id) || StopActionSpellListNames.Contains(aura.Name.ToLower())))
             {
                 if (PulseCheck())
                 {
@@ -73,6 +73,14 @@ namespace ATB.Utilities
                 TargetName = Target.Name;
                 return true;
             }
+
+            if (unitAsCharacter.IsCasting && AvertEyesSpellListNames.Any(x => unitAsCharacter.SpellCastInfo.SpellData.Name.ToLower().Contains(x)))
+            {
+                AvertEyesSpellName = unitAsCharacter.SpellCastInfo.SpellData.Name;
+                TargetName = Target.Name;
+                return true;
+            }
+
             return false;
         }
 
@@ -116,6 +124,14 @@ namespace ATB.Utilities
             6100,    // Mortal Ray
         };
 
+        private static readonly HashSet<string> AvertEyesSpellListNames = new HashSet<string>
+        {
+            "mortal ray",
+            "petrifaction",
+            "the dragon's gaze",
+            "petrifaction"
+        };
+
         private static readonly HashSet<uint> StopActionSpellList = new HashSet<uint>
         {
             639,  // Pyretic
@@ -125,7 +141,16 @@ namespace ATB.Utilities
             1133, // Pyretic
             1147, // Shadow Links
             1132, // Extreme Caution
-            1384  // Acceleration Bomb
+            1384,  // Acceleration Bomb
+            3802,
+        };
+
+        private static readonly HashSet<string> StopActionSpellListNames = new HashSet<string>
+        {
+            "pyretic",
+            "acceleration bomb",
+            "shadow links",
+            "extreme caution"
         };
 
         public static bool PulseCheck()
