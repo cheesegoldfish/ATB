@@ -45,6 +45,7 @@ namespace ATB.Utilities
                 case ClassJobType.Reaper:
                 case ClassJobType.Viper:
                 case ClassJobType.Pictomancer:
+                case ClassJobType.BlueMage:
                     return true;
 
                 default:
