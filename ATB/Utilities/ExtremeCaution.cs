@@ -45,12 +45,13 @@ namespace ATB.Utilities
                     return false;
                 }
 
-            if (Me.CharacterAuras.Any(aura => StopActionSpellList.Contains(aura.Id) || StopActionSpellListNames.Contains(aura.Name.ToLower())))
+            var debuffAura = Me.CharacterAuras.FirstOrDefault(aura => StopActionSpellList.Contains(aura.Id) || StopActionSpellListNames.Contains(aura.Name.ToLower()));
+
+            if (debuffAura != null)
             {
                 if (PulseCheck())
                 {
-                    var debuffId = StopActionSpellList.FirstOrDefault(aura => StopActionSpellList.Contains(aura));
-                    DebuffName = DataManager.GetAuraResultById(debuffId).CurrentLocaleName;
+                    DebuffName = DataManager.GetAuraResultById(debuffAura.Id).CurrentLocaleName;
                     Core.OverlayManager.AddToast(() => $"Danger! Stop Actions and Movement until {DebuffName} is cleared!", TimeSpan.FromSeconds(2), Colors.Red, Colors.White, new FontFamily("High Tower Text Italic"), new FontWeight(), 52);
                 }
                 return false;
