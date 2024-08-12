@@ -47,7 +47,7 @@ namespace ATB.Utilities
 
             var debuffAura = Me.CharacterAuras.FirstOrDefault(aura => StopActionSpellList.Contains(aura.Id) || StopActionSpellListNames.Contains(aura.Name.ToLower()));
 
-            if (debuffAura != null)
+            if (debuffAura != null && debuffAura.TimespanLeft.TotalMilliseconds <= 3000)
             {
                 if (PulseCheck())
                 {
