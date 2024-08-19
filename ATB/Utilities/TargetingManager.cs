@@ -61,7 +61,10 @@ namespace ATB.Utilities
             "stun",
             "heavy",
             "silence",
-            "deep freeze"
+            "deep freeze",
+            "biolysis",
+            "biolytic",
+            "mummification"
         };
 
         public static readonly string StickyAurasString = string.Join(",", StickyAuras);
