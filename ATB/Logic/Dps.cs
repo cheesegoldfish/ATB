@@ -34,7 +34,10 @@ namespace ATB.Logic
                 return false;
             }
 
-            if (Me.InCombat || (WorldManager.InPvP && WorldManager.ZoneId != 250) || Target != null && TargetConverted && ConvertedTarget().TaggerType != 0)
+            if (Me.InCombat 
+                || (WorldManager.InPvP && WorldManager.ZoneId != 250) 
+                // Sometimes striking dummies can have invalid TaggerTypes and look tapped but are not.
+                || (Target != null && TargetConverted && ConvertedTarget().TaggerType != 0 && !Target.EnglishName.Contains("Dummy")))
                 return await BrainBehavior.CombatLogic.ExecuteCoroutine();
 
             if (Me.InCombat) return false;
