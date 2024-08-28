@@ -1,5 +1,6 @@
 using ATB.Models;
 using ATB.Utilities;
+using ATB.Utilities.Extensions;
 using ff14bot;
 using ff14bot.Behavior;
 using ff14bot.Managers;
@@ -11,29 +12,33 @@ using static ATB.Utilities.Constants;
 
 namespace ATB.Logic
 {
-    public static class Healer
+    public class Battle
     {
-        private static readonly Composite HealerComposite;
+        private static readonly Composite BattleComposite;
         private static bool TargetConverted => TargetConverted(Target);
 
-        static Healer()
+        static Battle()
         {
-            HealerComposite = new Decorator(r => PartyDescriptors.IsHealer(Me.CurrentJob), new ActionRunCoroutine(ctx => HealerTask()));
+            BattleComposite = new Decorator(r => Core.Me.IsAlive, new ActionRunCoroutine(ctx => BattleTask()));
         }
 
         public static Composite Execute()
         {
-            return HealerComposite;
+            return BattleComposite;
         }
 
-        private static async Task<bool> HealerTask()
+        private static async Task<bool> BattleTask()
         {
             if (Me.IsDead || Me.IsMounted)
             {
                 return false;
             }
 
-            if (Me.InCombat || (WorldManager.InPvP && WorldManager.ZoneId != 250) || Target != null && TargetConverted && ConvertedTarget().TaggerType != 0)
+            if (Me.InCombat  
+                || (WorldManager.InPvP && WorldManager.ZoneId != 250) 
+                // Sometimes striking dummies can have invalid TaggerTypes and look tapped but are not.
+                || (Target != null && TargetConverted && ConvertedTarget().TaggerType != 0 && !Target.EnglishName.Contains("Dummy"))
+                || PartyManager.VisibleMembers.Any(x => x.BattleCharacter != null && x.BattleCharacter.InCombat))
                 return await BrainBehavior.CombatLogic.ExecuteCoroutine();
 
             if (Me.InCombat) return false;
@@ -65,12 +70,13 @@ namespace ATB.Logic
                             && MainSettingsModel.Instance.UseSmartPull 
                             && TargetingManager.IsValidEnemy(Core.Player.CurrentTarget) 
                             && Core.Player.CurrentTarget.Location.Distance3D(Core.Player.Location) <= RoutineManager.Current.PullRange + Core.Player.CurrentTarget.CombatReach)
+
                             return await RoutineManager.Current.PullBehavior.ExecuteCoroutine();
                     }
                 }
 
                 var tankCheck = PartyManager.VisibleMembers;
-                if (tankCheck.Any(x => PartyDescriptors.IsTank(x.Class)))
+                if (tankCheck.Any(x => PartyDescriptors.IsTank(x.Class) && x.BattleCharacter != Core.Me))
                 {
                     return false;
                 }

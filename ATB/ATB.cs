@@ -69,9 +69,7 @@ namespace ATB
                                     Helpers.Execute(),
                                     TargetingManager.Execute(),
                                     AutoFollow.Execute(),
-                                    Tank.Execute(),
-                                    Healer.Execute(),
-                                    Dps.Execute()))
+                                    Battle.Execute()))
                     );
             }
         }
@@ -83,10 +81,12 @@ namespace ATB
             if (MainSettingsModel.Instance.UseOverlay && !MainSettingsModel.Instance.HideOverlayWhenRunning)
                 OverlayLogic.Start();
             HotkeyManager.RegisterHotkeys();
+            //Core.TemporaryStorage.CombatPausedState = MainSettingsModel.Instance.UsePause;
         }
 
         public void Stop()
         {
+            //Core.TemporaryStorage.CombatPausedState = false;
             OverlayLogic.Stop();
             FormManager.SaveFormInstances();
             HotkeyManager.UnregisterAllHotkeys();
@@ -101,6 +101,8 @@ namespace ATB
         {
             if (!TreeRoot.IsRunning) return false;
             OverlayViewModel.Instance.IsPausedString = MainSettingsModel.Instance.UsePause ? "ATB Paused" : "ATB Running";
+
+            //Core.TemporaryStorage.CombatPausedState = MainSettingsModel.Instance.UsePause;
 
             if (DateTime.Now < _pulseLimiter) return true;
             _pulseLimiter = DateTime.Now.AddSeconds(3);
