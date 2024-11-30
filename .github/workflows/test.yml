@@ -32,13 +32,13 @@ jobs:
         powershell Compress-Archive -Path ./ATB/bin/release/ATB.dll, ./ATB/bin/release/Version.txt, ./ATBLoader/ATBLoader.cs -DestinationPath ./ATB/bin/release/ATB.zip
 
     - name: Upload Artifacts for Release
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ATB.zip
         path: ./ATB/bin/release/ATB.zip
 
     - name: Upload Version.txt for Release
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Version.txt
         path: ./ATB/bin/release/Version.txt

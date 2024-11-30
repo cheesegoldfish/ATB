@@ -127,9 +127,16 @@ namespace ATB.Utilities
 
                     if (objs != null && objs.Any())
                     {
+                        // Calculate vulnerability score with weighted mana importance
+                        // Mana is weighted at 60%, HP at 40%
                         var lowestHpTargets = objs
                             .OrderByDescending(o => o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
-                            .ThenBy(o => o.CurrentHealth)
+                            .ThenBy(o => {
+                                var char_o = (Character)o;
+                                var hpVulnerability = 100 - o.CurrentHealthPercent;
+                                var manaVulnerability = 100 - (char_o.CurrentMana * 100.0 / 10000);
+                                return (hpVulnerability * 0.4) + (manaVulnerability * 0.6); // Weighted average
+                            })
                             .Where(o => o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp);
 
                         GameObject newTarget;
@@ -139,7 +146,10 @@ namespace ATB.Utilities
                         if (lowestHpTargets.Any())
                         {
                             newTarget = lowestHpTargets.First();
-                            type = "Lowest HP " + newTarget.CurrentHealthPercent;
+                            var char_target = (Character)newTarget;
+                            var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) + 
+                                           ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
+                            type = $"Lowest HP {newTarget.CurrentHealthPercent}% (Mana: {char_target.CurrentMana}, Vuln: {vulnScore:F1}%)";
                             ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness / 2 * 1000;
                         }
                         else
@@ -167,10 +177,18 @@ namespace ATB.Utilities
                                 .OrderByDescending(o => o.CountDebuffs(true))
                                 .ThenByDescending(o => o.CountDebuffs(false))
                                 .ThenByDescending(o => targetCounts.TryGetValue(o.ObjectId, out var count) ? count : 0)
-                                .ThenBy(o => o.CurrentHealth);
+                                .ThenBy(o => {
+                                    var char_o = (Character)o;
+                                    var hpVulnerability = 100 - o.CurrentHealthPercent;
+                                    var manaVulnerability = 100 - (char_o.CurrentMana * 100.0 / 10000);
+                                    return (hpVulnerability * 0.4) + (manaVulnerability * 0.6);
+                                });
 
                             newTarget = mostTargetedTargets.FirstOrDefault();
-                            type = "Most Targeted " + (targetCounts.TryGetValue(newTarget.ObjectId, out var count) ? count : 0);
+                            var char_target = (Character)newTarget;
+                            var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) + 
+                                           ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
+                            type = $"Most Targeted {(targetCounts.TryGetValue(newTarget.ObjectId, out var count) ? count : 0)} (Vuln: {vulnScore:F1}%)";
                             ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness * 1000;
                         }
 
