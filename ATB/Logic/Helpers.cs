@@ -6,6 +6,7 @@ using ff14bot.Enums;
 using ff14bot.Managers;
 using ff14bot.RemoteAgents;
 using ff14bot.RemoteWindows;
+using Microsoft.VisualBasic.Logging;
 using System.Threading.Tasks;
 using TreeSharp;
 
@@ -14,6 +15,9 @@ namespace ATB.Logic
     public static class Helpers
     {
         private static readonly Composite HelpersComposite;
+
+        private const int
+            Jog = 4209;
 
         static Helpers()
         {
@@ -43,7 +47,10 @@ namespace ATB.Logic
                 }
             }
 
-            if (MainSettingsModel.Instance.AutoSprint && ActionManager.IsSprintReady && MovementManager.IsMoving)
+            if (MainSettingsModel.Instance.AutoSprint 
+                && ActionManager.IsSprintReady
+                && MovementManager.IsMoving
+                && !Core.Me.HasAura(Jog))
                 ActionManager.Sprint();
             
             if (MainSettingsModel.Instance.UseAutoTalk)
