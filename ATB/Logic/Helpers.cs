@@ -50,7 +50,8 @@ namespace ATB.Logic
             if (MainSettingsModel.Instance.AutoSprint 
                 && ActionManager.IsSprintReady
                 && MovementManager.IsMoving
-                && !Core.Me.HasAura(Jog))
+                && !Core.Me.HasAura(Jog)
+                && !WorldManager.InPvP)
                 ActionManager.Sprint();
             
             if (MainSettingsModel.Instance.UseAutoTalk)
