@@ -25,13 +25,18 @@ namespace ATB.Models
 
         private bool _autoCommenceDuty, _autoDutyNotify, _usePull, _usePause, _useAutoFace, _useAutoTalk, _useAutoQuest, _useAutoCutscene, _useAutoTargeting,
             _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting, _useStickyAuraTargeting,
-            _autoSprint, _pvpDetargetInvuln, _pvpSmartTargeting;
+            _autoSprint, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard;
 
         private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness;
 
         private double _overlayWidth, _overlayHeight, _overlayX, _overlayY, _overlayOpacity;
 
         private float _maxTargetDistance;
+
+        [Setting]
+        [DefaultValue(true)]
+        public bool Pvp_DetargetGuard
+        { get { return _pvpDetargetGuard; } set { _pvpDetargetGuard = value; OnPropertyChanged(); } }
 
         [Setting]
         [DefaultValue(true)]

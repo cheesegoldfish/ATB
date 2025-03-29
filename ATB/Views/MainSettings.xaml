@@ -77,7 +77,8 @@
                     <StackPanel Margin="5">
                         <Separator Style="{DynamicResource {x:Static ToolBar.SeparatorStyleKey}}" Margin="0,5" />
                         <TextBlock Style="{DynamicResource ATBTextBlockSection}" Text="PvP" Margin="0,5" />
-                        <CheckBox Content="De-Target Invuln (guard,hallow,dead) " Margin="1,1,1.4,1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.Pvp_DetargetInvuln, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <CheckBox Content="De-Target Guard" Margin="1,1,1.4,1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.Pvp_DetargetGuard, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <CheckBox Content="De-Target Invuln (hallowed,dead)" Margin="1,1,1.4,1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.Pvp_DetargetInvuln, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <CheckBox Content="Use PVP Smart Targeting " Margin="1,1,1.4,1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.Pvp_SmartTargeting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <controls:ATBNumeric Margin="2" HorizontalAlignment="Left" Width="260" MinValue="0" MaxValue="100" TextBlockValue="Low HP Priority" Value="{Binding Settings.Pvp_SmartTargetingHp, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                         <controls:ATBNumeric Margin="2" HorizontalAlignment="Left" Width="260" MinValue="0" MaxValue="100" TextBlockValue="Target Stickiness" Value="{Binding Settings.Pvp_Stickiness, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

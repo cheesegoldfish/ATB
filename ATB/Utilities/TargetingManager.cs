@@ -42,9 +42,13 @@ namespace ATB.Utilities
             Invincibility9
         };
 
-        public static readonly List<uint> Pvp_Invuln = new List<uint>
+        public static readonly List<uint> Pvp_Guard = new List<uint>
         {
             3054, // guard
+        };
+
+        public static readonly List<uint> Pvp_Invuln = new List<uint>
+        {
             1302, // hallowed
             3039, // undead redemption
         };
@@ -99,6 +103,9 @@ namespace ATB.Utilities
                 if (MainSettingsModel.Instance.Pvp_DetargetInvuln && Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln) && Core.Me.InCombat)
                     Core.Me.ClearTarget();
 
+                if (MainSettingsModel.Instance.Pvp_DetargetGuard && Core.Me.CurrentTarget.HasAnyAura(Pvp_Guard) && Core.Me.InCombat)
+                    Core.Me.ClearTarget();
+
                 if (MainSettingsModel.Instance.UseStickyAuraTargeting
                     && Core.Me.CurrentTarget.HasAnyAura(Pvp_StickyAuras, true))
                     return false;
@@ -111,7 +118,8 @@ namespace ATB.Utilities
                         if (Core.Me.CurrentTarget.Distance(Core.Me) < MainSettingsModel.Instance.MaxTargetDistance / 2
                             && IsValidEnemy(Core.Me.CurrentTarget)
                             && Core.Me.CurrentTarget.InLineOfSight()
-                            && !Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln))
+                            && !(MainSettingsModel.Instance.Pvp_DetargetInvuln && Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln))
+                            && !(MainSettingsModel.Instance.Pvp_DetargetGuard && Core.Me.CurrentTarget.HasAnyAura(Pvp_Guard)))
                         {
                             return false;
                         }
@@ -122,7 +130,8 @@ namespace ATB.Utilities
                         && ((Character)o).InCombat
                         && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance
                         && o.InLineOfSight()
-                        && !o.HasAnyAura(Pvp_Invuln)
+                        && !(MainSettingsModel.Instance.Pvp_DetargetInvuln && o.HasAnyAura(Pvp_Invuln))
+                        && !(MainSettingsModel.Instance.Pvp_DetargetGuard && o.HasAnyAura(Pvp_Guard))
                     );
 
                     if (objs != null && objs.Any())
