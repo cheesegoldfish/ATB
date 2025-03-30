@@ -29,7 +29,7 @@ namespace ATB.Logic
 
         private static async Task<bool> BattleTask()
         {
-            if (Me.IsDead || Me.IsMounted)
+            if (Me.IsDead)
             {
                 return false;
             }
@@ -42,6 +42,7 @@ namespace ATB.Logic
                 return await BrainBehavior.CombatLogic.ExecuteCoroutine();
 
             if (Me.InCombat) return false;
+            if (Me.IsMounted) return false;
 
             if (RoutineManager.Current.RestBehavior != null)
                 await RoutineManager.Current.RestBehavior.ExecuteCoroutine();

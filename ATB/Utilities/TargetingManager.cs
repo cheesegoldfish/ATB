@@ -53,6 +53,21 @@ namespace ATB.Utilities
             3039, // undead redemption
         };
 
+        public static readonly uint BattleHigh1 = 2131;
+        public static readonly uint BattleHigh2 = 2132;
+        public static readonly uint BattleHigh3 = 2133;
+        public static readonly uint BattleHigh4 = 2134;
+        public static readonly uint BattleHigh5 = 2135;
+
+        public static readonly List<uint> BattleHigh = new List<uint>
+        {
+            BattleHigh1,
+            BattleHigh2,
+            BattleHigh3,
+            BattleHigh4,
+            BattleHigh5,
+        };        
+
         public static readonly HashSet<string> StickyAuras = new HashSet<string> {
             "wildfire",
         };
@@ -139,7 +154,12 @@ namespace ATB.Utilities
                         // Calculate vulnerability score with weighted mana importance
                         // Mana is weighted at 60%, HP at 40%
                         var lowestHpTargets = objs
-                            .OrderByDescending(o => o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
+                            .OrderByDescending(o => o.HasAura(BattleHigh5) ? 6 :
+                                                    o.HasAura(BattleHigh4) ? 5 :
+                                                    o.HasAura(BattleHigh3) ? 4 :
+                                                    o.HasAura(BattleHigh2) ? 3 :
+                                                    o.HasAura(BattleHigh1) ? 2 : 0)
+                            .ThenByDescending(o => o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
                             .ThenBy(o => {
                                 var char_o = (Character)o;
                                 var hpVulnerability = 100 - o.CurrentHealthPercent;
