@@ -49,7 +49,8 @@
                     <CheckBox Content="Auto-Skip Cutscene" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseAutoCutscene, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     <CheckBox Content="Auto Commence Duty" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.AutoCommenceDuty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />                   
                     <CheckBox Content="Auto Sprint" Margin="1,1,1.4,1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.AutoSprint, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    
+                    <CheckBox Content="      In Sancturary Only" Margin="1,1,1.4,1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.AutoSprintInSanctuaryOnly, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
                     <TextBlock Style="{DynamicResource ATBTextBlockSection}" Text="Config" Margin="0,5" />
                     <CheckBox Content="Enable Overlay" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Command="{Binding OverlayViewUpdate}" />
                     <CheckBox Content="Show Toast Messages" Margin="1" Style="{DynamicResource ATBCheckbox}" IsChecked="{Binding Settings.UseToastMessages, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />

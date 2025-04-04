@@ -66,7 +66,7 @@ namespace ATB.Utilities
             BattleHigh3,
             BattleHigh4,
             BattleHigh5,
-        };        
+        };
 
         public static readonly HashSet<string> StickyAuras = new HashSet<string> {
             "wildfire",
@@ -154,13 +154,16 @@ namespace ATB.Utilities
                         // Calculate vulnerability score with weighted mana importance
                         // Mana is weighted at 60%, HP at 40%
                         var lowestHpTargets = objs
+                            .OrderByDescending(o => o.Name.Contains("Interceptor ") ? 3 :
+                                                    o.Name.Contains("Interceptor") ? 2 : 1)
                             .OrderByDescending(o => o.HasAura(BattleHigh5) ? 6 :
                                                     o.HasAura(BattleHigh4) ? 5 :
                                                     o.HasAura(BattleHigh3) ? 4 :
                                                     o.HasAura(BattleHigh2) ? 3 :
                                                     o.HasAura(BattleHigh1) ? 2 : 0)
                             .ThenByDescending(o => o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
-                            .ThenBy(o => {
+                            .ThenBy(o =>
+                            {
                                 var char_o = (Character)o;
                                 var hpVulnerability = 100 - o.CurrentHealthPercent;
                                 var manaVulnerability = 100 - (char_o.CurrentMana * 100.0 / 10000);
@@ -176,7 +179,7 @@ namespace ATB.Utilities
                         {
                             newTarget = lowestHpTargets.First();
                             var char_target = (Character)newTarget;
-                            var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) + 
+                            var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) +
                                            ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
                             type = $"Lowest HP {newTarget.CurrentHealthPercent}% (Mana: {char_target.CurrentMana}, Vuln: {vulnScore:F1}%)";
                             ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness / 2 * 1000;
@@ -206,7 +209,8 @@ namespace ATB.Utilities
                                 .OrderByDescending(o => o.CountDebuffs(true))
                                 .ThenByDescending(o => o.CountDebuffs(false))
                                 .ThenByDescending(o => targetCounts.TryGetValue(o.ObjectId, out var count) ? count : 0)
-                                .ThenBy(o => {
+                                .ThenBy(o =>
+                                {
                                     var char_o = (Character)o;
                                     var hpVulnerability = 100 - o.CurrentHealthPercent;
                                     var manaVulnerability = 100 - (char_o.CurrentMana * 100.0 / 10000);
@@ -215,7 +219,7 @@ namespace ATB.Utilities
 
                             newTarget = mostTargetedTargets.FirstOrDefault();
                             var char_target = (Character)newTarget;
-                            var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) + 
+                            var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) +
                                            ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
                             type = $"Most Targeted {(targetCounts.TryGetValue(newTarget.ObjectId, out var count) ? count : 0)} (Vuln: {vulnScore:F1}%)";
                             ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness * 1000;
@@ -242,7 +246,7 @@ namespace ATB.Utilities
                             }
                         }
                     }
-                    
+
                     return false;
                 }
             }
@@ -319,9 +323,9 @@ namespace ATB.Utilities
                 case AutoTargetSelection.LowestCurrentHp:
                     if (!Core.Player.HasTarget || !Core.Player.CurrentTarget.CanAttack || PulseCheck())
                     {
-                        var objs = GameObjectManager.GameObjects.Where(o => 
-                            IsValidEnemy(o) 
-                            && ((Character)o).InCombat 
+                        var objs = GameObjectManager.GameObjects.Where(o =>
+                            IsValidEnemy(o)
+                            && ((Character)o).InCombat
                             && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance
                             && o.InLineOfSight()
                         );
@@ -574,16 +578,16 @@ namespace ATB.Utilities
             if (!(obj is Character))
                 return false;
             var c = (Character)obj;
-            return !c.IsMe 
+            return !c.IsMe
                 && !c.IsDead
                 && c.IsValid
                 && c.IsTargetable
                 && c.IsVisible
                 && c.InLineOfSight()
-                && c.CanAttack 
+                && c.CanAttack
                 && !c.HasAnyAura(Invincibility)
                 && !c.Name.Contains("Raven")
-                && !c.Name.Contains("Falcon") 
+                && !c.Name.Contains("Falcon")
                 && !c.Name.Contains("Striking Dummy")
                 && !c.Name.Contains("Icebound Tomelith");
         }
@@ -593,11 +597,11 @@ namespace ATB.Utilities
             if (!(obj is Character))
                 return false;
             var c = (Character)obj;
-            return !c.IsMe 
+            return !c.IsMe
                 && !c.IsDead
                 && c.IsValid
                 && c.IsTargetable
-                && c.IsVisible 
+                && c.IsVisible
                 && !c.CanAttack
                 && c.InLineOfSight()
                 && c.Type == GameObjectType.Pc;

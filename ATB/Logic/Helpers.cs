@@ -47,13 +47,14 @@ namespace ATB.Logic
                 }
             }
 
-            if (MainSettingsModel.Instance.AutoSprint 
+            if (MainSettingsModel.Instance.AutoSprint
                 && ActionManager.IsSprintReady
                 && MovementManager.IsMoving
                 && !Core.Me.HasAura(Jog)
-                && !WorldManager.InPvP)
+                && !WorldManager.InPvP
+                && (!MainSettingsModel.Instance.AutoSprintInSanctuaryOnly || WorldManager.InSanctuary))
                 ActionManager.Sprint();
-            
+
             if (MainSettingsModel.Instance.UseAutoTalk)
             {
                 if (Core.Me.IsAlive)

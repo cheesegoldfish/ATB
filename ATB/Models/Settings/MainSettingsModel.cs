@@ -25,7 +25,7 @@ namespace ATB.Models
 
         private bool _autoCommenceDuty, _autoDutyNotify, _usePull, _usePause, _useAutoFace, _useAutoTalk, _useAutoQuest, _useAutoCutscene, _useAutoTargeting,
             _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting, _useStickyAuraTargeting,
-            _autoSprint, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard;
+            _autoSprint, _autoSprintInSanctuaryOnly, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard;
 
         private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness;
 
@@ -202,6 +202,11 @@ namespace ATB.Models
         [DefaultValue(false)]
         public bool AutoSprint
         { get { return _autoSprint; } set { _autoSprint = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(false)]
+        public bool AutoSprintInSanctuaryOnly
+        { get { return _autoSprintInSanctuaryOnly; } set { _autoSprintInSanctuaryOnly = value; OnPropertyChanged(); } }
 
         [JsonIgnore]
         private List<string> _combatRoutineList;
