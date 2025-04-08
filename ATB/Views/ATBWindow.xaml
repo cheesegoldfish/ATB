@@ -67,9 +67,17 @@
 
         <StackPanel Background="{DynamicResource TabUnselectedBackground}" Grid.Row="2">
             <Rectangle Height="2" Fill="{DynamicResource DividerTop}" />
-            <StackPanel Margin="5" Orientation="Horizontal" HorizontalAlignment="Right">
-                <ComboBox Width="100" Style="{DynamicResource ATBComboBoxNoLabel}" SelectedValue="{Binding Settings.Theme}" ItemsSource="{Binding Source={StaticResource SelectedTheme}}" SelectionChanged="CmbSwitchTheme" />
-            </StackPanel>
+            <Grid Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <TextBlock Text="Current Version: " Style="{DynamicResource ATBTextBlock}" Foreground="{DynamicResource TextColor}" />
+                    <TextBlock Text="{Binding Version}" Style="{DynamicResource ATBTextBlock}" Foreground="{DynamicResource TextColor}" />
+                </StackPanel>
+                <ComboBox Grid.Column="1" Width="100" Style="{DynamicResource ATBComboBoxNoLabel}" SelectedValue="{Binding Settings.Theme}" ItemsSource="{Binding Source={StaticResource SelectedTheme}}" SelectionChanged="CmbSwitchTheme" />
+            </Grid>
         </StackPanel>
     </Grid>
 </Window>
