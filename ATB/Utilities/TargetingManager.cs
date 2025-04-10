@@ -201,14 +201,17 @@ namespace ATB.Utilities
                                 }
                             }
 
+                            // Check if we have 7 or more alliance members
+                            bool hasLargeAlliance = allies.Count() >= 7;
+
                             // prioritize things i've debuffed already
                             // then things the team has debuffed
-                            // then by who has the most targets
+                            // then by who has the most targets (only if not in large alliance)
                             // then by lowest hp
                             var mostTargetedTargets = objs
                                 .OrderByDescending(o => o.CountDebuffs(true))
                                 .ThenByDescending(o => o.CountDebuffs(false))
-                                .ThenByDescending(o => targetCounts.TryGetValue(o.ObjectId, out var count) ? count : 0)
+                                .ThenByDescending(o => hasLargeAlliance ? 0 : (targetCounts.TryGetValue(o.ObjectId, out var count) ? count : 0))
                                 .ThenBy(o =>
                                 {
                                     var char_o = (Character)o;
@@ -221,7 +224,9 @@ namespace ATB.Utilities
                             var char_target = (Character)newTarget;
                             var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) +
                                            ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
-                            type = $"Most Targeted {(targetCounts.TryGetValue(newTarget.ObjectId, out var count) ? count : 0)} (Vuln: {vulnScore:F1}%)";
+                            type = hasLargeAlliance
+                                ? $"Large Alliance - HP Based {newTarget.CurrentHealthPercent}% (Vuln: {vulnScore:F1}%)"
+                                : $"Most Targeted {(targetCounts.TryGetValue(newTarget.ObjectId, out var count) ? count : 0)} (Vuln: {vulnScore:F1}%)";
                             ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness * 1000;
                         }
 
