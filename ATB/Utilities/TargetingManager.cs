@@ -154,14 +154,7 @@ namespace ATB.Utilities
                         // Calculate vulnerability score with weighted mana importance
                         // Mana is weighted at 60%, HP at 40%
                         var lowestHpTargets = objs
-                            .OrderByDescending(o => o.Name.Contains("Interceptor ") ? 3 :
-                                                    o.Name.Contains("Interceptor") ? 2 : 1)
-                            .OrderByDescending(o => o.HasAura(BattleHigh5) ? 6 :
-                                                    o.HasAura(BattleHigh4) ? 5 :
-                                                    o.HasAura(BattleHigh3) ? 4 :
-                                                    o.HasAura(BattleHigh2) ? 3 :
-                                                    o.HasAura(BattleHigh1) ? 2 : 0)
-                            .ThenByDescending(o => o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
+                            .OrderByDescending(o => o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
                             .ThenBy(o =>
                             {
                                 var char_o = (Character)o;
@@ -209,7 +202,19 @@ namespace ATB.Utilities
                             // then by who has the most targets (only if not in large alliance)
                             // then by lowest hp
                             var mostTargetedTargets = objs
-                                .OrderByDescending(o => o.CountDebuffs(true))
+                                .OrderByDescending(o =>
+                                    o.Distance(Core.Me) - Core.Me.CombatReach - o.CombatReach <= 5 ? 3 :
+                                    o.Distance(Core.Me) - Core.Me.CombatReach - o.CombatReach <= 7 ? 2 :
+                                    o.Distance(Core.Me) - Core.Me.CombatReach - o.CombatReach <= 10 ? 1 : 0
+                                )
+                                .ThenByDescending(o => o.Name.Contains("Interceptor ") ? 3 :
+                                                        o.Name.Contains("Interceptor") ? 2 : 1)
+                                .ThenByDescending(o => o.HasAura(BattleHigh5) ? 6 :
+                                                        o.HasAura(BattleHigh4) ? 5 :
+                                                        o.HasAura(BattleHigh3) ? 4 :
+                                                        o.HasAura(BattleHigh2) ? 3 :
+                                                        o.HasAura(BattleHigh1) ? 2 : 0)
+                                .ThenByDescending(o => o.CountDebuffs(true))
                                 .ThenByDescending(o => o.CountDebuffs(false))
                                 .ThenByDescending(o => hasLargeAlliance ? 0 : (targetCounts.TryGetValue(o.ObjectId, out var count) ? count : 0))
                                 .ThenBy(o =>
