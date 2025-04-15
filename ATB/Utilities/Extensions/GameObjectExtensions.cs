@@ -235,6 +235,44 @@ namespace ATB.Utilities.Extensions
             return score;
         }
 
+        /// <summary>
+        /// Calculates the effective combat distance between this GameObject and another GameObject.
+        /// The effective combat distance is the actual distance minus the combat reach of both objects.
+        /// </summary>
+        /// <param name="source">The source GameObject</param>
+        /// <param name="target">The target GameObject</param>
+        /// <returns>The effective combat distance</returns>
+        public static float EffectiveCombatDistance(this GameObject source, GameObject target)
+        {
+            if (source == null || target == null)
+                return float.MaxValue;
+
+            return source.Distance(target) - source.CombatReach - target.CombatReach;
+        }
+
+        /// <summary>
+        /// Checks if the target is within the specified combat distance from this GameObject.
+        /// </summary>
+        /// <param name="source">The source GameObject</param>
+        /// <param name="target">The target GameObject</param>
+        /// <param name="distance">The maximum effective combat distance</param>
+        /// <returns>True if the target is within the specified combat distance</returns>
+        public static bool WithinCombatReach(this GameObject source, GameObject target, float distance)
+        {
+            return source.EffectiveCombatDistance(target) <= distance;
+        }
+
+        /// <summary>
+        /// Checks if this GameObject is within the specified combat distance from the player (Core.Me).
+        /// </summary>
+        /// <param name="source">The source GameObject</param>
+        /// <param name="distance">The maximum effective combat distance</param>
+        /// <returns>True if this GameObject is within the specified combat distance from the player</returns>
+        public static bool WithinCombatReach(this GameObject source, float distance)
+        {
+            return source.EffectiveCombatDistance(Core.Me) <= distance;
+        }
+
         #endregion Helpers
     }
 }

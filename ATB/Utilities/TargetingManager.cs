@@ -130,7 +130,7 @@ namespace ATB.Utilities
                     if (PartyDescriptors.IsMelee(Core.Me.CurrentJob) && Core.Me.HasTarget)
                     {
                         // Stick to current target if melee
-                        if (Core.Me.CurrentTarget.Distance(Core.Me) < MainSettingsModel.Instance.MaxTargetDistance / 2
+                        if (Core.Me.CurrentTarget.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance / 2)
                             && IsValidEnemy(Core.Me.CurrentTarget)
                             && Core.Me.CurrentTarget.InLineOfSight()
                             && !(MainSettingsModel.Instance.Pvp_DetargetInvuln && Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln))
@@ -143,7 +143,7 @@ namespace ATB.Utilities
                     var objs = GameObjectManager.GameObjects.Where(o =>
                         IsValidEnemy(o)
                         && ((Character)o).InCombat
-                        && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance
+                        && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance)
                         && o.InLineOfSight()
                         && !(MainSettingsModel.Instance.Pvp_DetargetInvuln && o.HasAnyAura(Pvp_Invuln))
                         && !(MainSettingsModel.Instance.Pvp_DetargetGuard && o.HasAnyAura(Pvp_Guard))
@@ -203,9 +203,9 @@ namespace ATB.Utilities
                             // then by lowest hp
                             var mostTargetedTargets = objs
                                 .OrderByDescending(o =>
-                                    o.Distance(Core.Me) - Core.Me.CombatReach - o.CombatReach <= 5 ? 3 :
-                                    o.Distance(Core.Me) - Core.Me.CombatReach - o.CombatReach <= 7 ? 2 :
-                                    o.Distance(Core.Me) - Core.Me.CombatReach - o.CombatReach <= 10 ? 1 : 0
+                                    o.WithinCombatReach(5) ? 3 :
+                                    o.WithinCombatReach(7) ? 2 :
+                                    o.WithinCombatReach(10) ? 1 : 0
                                 )
                                 .ThenByDescending(o => o.Name.Contains("Interceptor ") ? 3 :
                                                         o.Name.Contains("Interceptor") ? 2 : 1)
@@ -246,7 +246,7 @@ namespace ATB.Utilities
                                     // Or my target is in sight anymore
                                     || !Me.CurrentTarget.InLineOfSight()
                                     // Or my target walked out of range
-                                    || Core.Me.Distance(Me.CurrentTarget) >= MainSettingsModel.Instance.MaxTargetDistance + 1
+                                    || !Me.CurrentTarget.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance + 1)
                                 )
                             )
                             {
@@ -287,7 +287,7 @@ namespace ATB.Utilities
                         var objs = GameObjectManager.GameObjects.Where(o =>
                             IsValidEnemy(o)
                             && ((Character)o).InCombat
-                            && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance
+                            && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance)
                             && o.InLineOfSight()
                         );
                         if (objs != null && objs.Any())
@@ -316,7 +316,7 @@ namespace ATB.Utilities
                     {
                         {
                             var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o) && ((Character)o).InCombat
-                            && ((Character)o).CurrentTargetId == PartyTank.ObjectId && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance);
+                            && ((Character)o).CurrentTargetId == PartyTank.ObjectId && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance));
                             if (objs != null && objs.Any())
                             {
                                 var newTarget = objs.OrderBy(o => o.CurrentHealth).First();
@@ -336,7 +336,7 @@ namespace ATB.Utilities
                         var objs = GameObjectManager.GameObjects.Where(o =>
                             IsValidEnemy(o)
                             && ((Character)o).InCombat
-                            && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance
+                            && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance)
                             && o.InLineOfSight()
                         );
                         if (objs != null && objs.Any())
@@ -355,7 +355,7 @@ namespace ATB.Utilities
                                     // Or my target is in sight anymore
                                     || !Me.CurrentTarget.InLineOfSight()
                                     // Or my target walked out of range
-                                    || Core.Me.Distance(Me.CurrentTarget) >= MainSettingsModel.Instance.MaxTargetDistance + 3
+                                    || !Me.CurrentTarget.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance + 3)
                                 )
                             )
                             {
@@ -386,7 +386,7 @@ namespace ATB.Utilities
                     {
                         var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o)
                         && ((Character)o).InCombat
-                        && ((Character)o).CurrentTargetId == PartyTank.ObjectId && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance);
+                        && ((Character)o).CurrentTargetId == PartyTank.ObjectId && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance));
                         if (objs != null && objs.Any())
                         {
                             var newTarget = objs.OrderBy(o => o.MaxHealth).First();
@@ -403,7 +403,7 @@ namespace ATB.Utilities
                 case AutoTargetSelection.LowestTotalHp:
                     if (!Core.Player.HasTarget || !Core.Player.CurrentTarget.CanAttack || PulseCheck())
                     {
-                        var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o) && ((Character)o).InCombat && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance);
+                        var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o) && ((Character)o).InCombat && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance));
                         if (objs != null && objs.Any())
                         {
                             var newTarget = objs.OrderBy(o => o.MaxHealth).First();
@@ -428,7 +428,7 @@ namespace ATB.Utilities
                     {
                         {
                             var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o) && ((Character)o).InCombat
-                                                                                && ((Character)o).CurrentTargetId == PartyTank.ObjectId && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance);
+                                                                                && ((Character)o).CurrentTargetId == PartyTank.ObjectId && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance));
                             if (objs != null && objs.Any())
                             {
                                 var newTarget = objs.OrderByDescending(o => o.CurrentHealth).First();
@@ -445,7 +445,7 @@ namespace ATB.Utilities
                 case AutoTargetSelection.HighestCurrentHp:
                     if (!Core.Player.HasTarget || !Core.Player.CurrentTarget.CanAttack || PulseCheck())
                     {
-                        var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o) && ((Character)o).InCombat && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance);
+                        var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o) && ((Character)o).InCombat && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance));
                         if (objs != null && objs.Any())
                         {
                             var newTarget = objs.OrderByDescending(o => o.CurrentHealth).First();
@@ -470,7 +470,7 @@ namespace ATB.Utilities
                     {
                         var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o)
                                                                             && ((Character)o).InCombat
-                                                                            && ((Character)o).CurrentTargetId == PartyTank.ObjectId && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance);
+                                                                            && ((Character)o).CurrentTargetId == PartyTank.ObjectId && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance));
                         if (objs != null && objs.Any())
                         {
                             var newTarget = objs.OrderByDescending(o => o.MaxHealth).First();
@@ -487,7 +487,7 @@ namespace ATB.Utilities
                 case AutoTargetSelection.HighestTotalHp:
                     if (!Core.Player.HasTarget || !Core.Player.CurrentTarget.CanAttack || PulseCheck())
                     {
-                        var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o) && ((Character)o).InCombat && Core.Me.Distance(o) <= MainSettingsModel.Instance.MaxTargetDistance);
+                        var objs = GameObjectManager.GameObjects.Where(o => IsValidEnemy(o) && ((Character)o).InCombat && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance));
                         if (objs != null && objs.Any())
                         {
                             var newTarget = objs.OrderByDescending(o => o.MaxHealth).First();
@@ -524,8 +524,8 @@ namespace ATB.Utilities
         {
             return GameObjectManager.GameObjects.Where(u =>
                     IsValidEnemy(u)
-                    && Core.Me.Distance(u) <= MainSettingsModel.Instance.MaxTargetDistance)
-                .OrderBy(u => Core.Me.Distance(u)).FirstOrDefault();
+                    && u.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance))
+                .OrderBy(u => u.EffectiveCombatDistance(Core.Me)).FirstOrDefault();
         }
 
         public static bool IsTank(Character c)
