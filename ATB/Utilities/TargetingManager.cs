@@ -140,14 +140,17 @@ namespace ATB.Utilities
                         }
                     }
 
-                    var objs = GameObjectManager.GameObjects.Where(o =>
-                        IsValidEnemy(o)
-                        && ((Character)o).InCombat
-                        && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance)
-                        && o.InLineOfSight()
-                        && !(MainSettingsModel.Instance.Pvp_DetargetInvuln && o.HasAnyAura(Pvp_Invuln))
-                        && !(MainSettingsModel.Instance.Pvp_DetargetGuard && o.HasAnyAura(Pvp_Guard))
-                    );
+                    var objs = GameObjectManager.GameObjects
+                        .Where(o =>
+                            IsValidEnemy(o)
+                            && ((Character)o).InCombat
+                            && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance)
+                            && o.InLineOfSight()
+                            && !(MainSettingsModel.Instance.Pvp_DetargetInvuln && o.HasAnyAura(Pvp_Invuln))
+                            && !(MainSettingsModel.Instance.Pvp_DetargetGuard && o.HasAnyAura(Pvp_Guard))
+                        )
+                        .OrderBy(o => o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp ? 0 : o.Distance(Core.Me))
+                        .Take(20);
 
                     if (objs != null && objs.Any())
                     {
