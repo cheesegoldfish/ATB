@@ -22,6 +22,8 @@ ATB is a precompiled routine, which is different than some others. In order to g
 2. Right click the zip, select properties, and check the "Unblock" option. This is necessary because the zip file includes a dll.
 3. Unzip into your `RebornBuddy\BotBases` folder.
 
+ATB automatically updates when Reborn Buddy is started, there is no need to add ATB to an autoupdater like RepoBuddy.
+
 ## Magitek Usage
 
 You probably also want a way to always use Magitek instead of having to pick the Routine every time you switch classes.
