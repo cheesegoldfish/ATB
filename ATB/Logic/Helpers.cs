@@ -17,7 +17,11 @@ namespace ATB.Logic
         private static readonly Composite HelpersComposite;
 
         private const int
-            Jog = 4209;
+            Jog = 4209,
+            StellarSprint = 4398;
+
+        private const uint
+            SinusArdorumZoneId = 1237;
 
         static Helpers()
         {
@@ -47,12 +51,24 @@ namespace ATB.Logic
                 }
             }
 
+            // Use Stellar Sprint in Sinus Ardorum zone if enabled
             if (MainSettingsModel.Instance.AutoSprint
+                && WorldManager.ZoneId == SinusArdorumZoneId
+                && ActionManager.IsSprintReady
+                && MovementManager.IsMoving
+                && !Core.Me.HasAura(StellarSprint)
+                && !WorldManager.InPvP)
+            {
+                ActionManager.Sprint();
+            }
+            // Use regular Sprint in other zones
+            else if (MainSettingsModel.Instance.AutoSprint
                 && ActionManager.IsSprintReady
                 && MovementManager.IsMoving
                 && !Core.Me.HasAura(Jog)
                 && !WorldManager.InPvP
-                && (!MainSettingsModel.Instance.AutoSprintInSanctuaryOnly || WorldManager.InSanctuary))
+                && (!MainSettingsModel.Instance.AutoSprintInSanctuaryOnly || WorldManager.InSanctuary)
+                && WorldManager.ZoneId != SinusArdorumZoneId)
                 ActionManager.Sprint();
 
             if (MainSettingsModel.Instance.UseAutoTalk)
