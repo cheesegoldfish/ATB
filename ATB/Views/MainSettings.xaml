@@ -117,6 +117,15 @@
                                                   Margin="1"
                                                   Style="{DynamicResource ATBCheckbox}"
                                                   IsChecked="{Binding Settings.UseOutputToEcho, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <CheckBox Content="Show Quick Start Button"
+                                                  Margin="1"
+                                                  Style="{DynamicResource ATBCheckbox}"
+                                                  IsChecked="{Binding Settings.UseQuickStartButton, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBlock Style="{DynamicResource ATBTextBlockSectionRegular}"
+                                                   Text="(Requires LlamaLibrary and RebornBuddy restart to take effect)"
+                                                   Margin="20,0,0,5"
+                                                   FontSize="10"
+                                                   FontStyle="Italic"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
 

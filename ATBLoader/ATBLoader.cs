@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using ff14bot;
 using ff14bot.AClasses;
 using ff14bot.Helpers;
 using TreeSharp;
 using Action = TreeSharp.Action;
 using ICSharpCode.SharpZipLib.Zip;
 using ff14bot.Behavior;
+using ff14bot.Managers;
+using Newtonsoft.Json.Linq;
 
 namespace ATBLoader
 {
@@ -78,6 +82,85 @@ namespace ATBLoader
         public ATBLoader()
         {
             Task.Factory.StartNew(AutoUpdate).Wait();
+            // LlamaLibrary loads before BotBases, so it's already available
+            TryAddQuickStartButton();
+        }
+
+        private static bool _buttonAdded = false;
+
+        private static void TryAddQuickStartButton()
+        {
+            if (_buttonAdded) return;
+
+            try
+            {
+                // Check if user wants the button by reading settings JSON
+                var settingsPath = Path.Combine(Environment.CurrentDirectory, $@"Settings\{Core.Me?.Name}\ATB\Main_Settings.json");
+                if (!File.Exists(settingsPath)) return; // No settings file yet
+
+                var json = File.ReadAllText(settingsPath);
+                var settings = JObject.Parse(json);
+                var useButton = settings["UseQuickStartButton"]?.Value<bool>() ?? false;
+
+                if (!useButton) return; // Setting is disabled
+
+                // LlamaLibrary is compiled as part of "Quest Behaviors_[hash].dll"
+                var llamaAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a =>
+                    {
+                        var name = a.GetName().Name;
+                        return name.StartsWith("Quest Behaviors", StringComparison.OrdinalIgnoreCase) ||
+                               name.StartsWith("Quest_Behaviors", StringComparison.OrdinalIgnoreCase);
+                    });
+
+                if (llamaAssembly == null) return; // Quest Behaviors not installed
+
+                var rbButtonHelperType = llamaAssembly.GetType("LlamaLibrary.Helpers.RbButtonHelper");
+                if (rbButtonHelperType == null) return;
+
+                var addButtonMethod = rbButtonHelperType.GetMethod("AddButton",
+                    BindingFlags.Public | BindingFlags.Static,
+                    null,
+                    new[] { typeof(string), typeof(string), typeof(System.Action) },
+                    null);
+
+                if (addButtonMethod == null) return;
+
+                System.Action buttonAction = () =>
+                {
+                    try
+                    {
+                        if (TreeRoot.IsRunning)
+                        {
+                            TreeRoot.Stop($"Switching to {ProjectName}");
+                            System.Threading.Thread.Sleep(500);
+                        }
+
+                        var atbBot = BotManager.Bots.FirstOrDefault(b => b.Name == ProjectName);
+                        if (atbBot != null)
+                        {
+                            BotManager.SetCurrent(atbBot);
+                            System.Threading.Thread.Sleep(300);
+
+                            if (!TreeRoot.IsRunning)
+                            {
+                                TreeRoot.Start();
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Log($"Error: {e.Message}");
+                    }
+                };
+
+                addButtonMethod.Invoke(null, new object[] { $"{ProjectName} Start", $"{ProjectName} Start", buttonAction });
+                _buttonAdded = true;
+            }
+            catch
+            {
+                // Silently fail if LlamaLibrary not available
+            }
         }
 
         private static void RedirectAssembly()
