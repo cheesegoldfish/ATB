@@ -68,6 +68,8 @@ namespace ATB.Utilities
             BattleHigh5,
         };
 
+        public static readonly uint MountedStatus = 1420;
+
         public static readonly HashSet<string> StickyAuras = new HashSet<string> {
             "wildfire",
         };
@@ -142,7 +144,7 @@ namespace ATB.Utilities
 
                     var objs = GameObjectManager.GameObjects
                         .Where(o =>
-                            IsValidEnemy(o)
+                            IsValidEnemyPvP(o)
                             && ((Character)o).InCombat
                             && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance)
                             && o.InLineOfSight()
@@ -157,7 +159,22 @@ namespace ATB.Utilities
                         // Calculate vulnerability score with weighted mana importance
                         // Mana is weighted at 60%, HP at 40%
                         var lowestHpTargets = objs
-                            .OrderByDescending(o => o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
+                            .OrderByDescending(o =>
+                            {
+                                // Mounted robots get highest priority
+                                if (MainSettingsModel.Instance.Pvp_PrioritizeMountedRobots && o.HasAura(MountedStatus))
+                                    return 3; // Highest priority
+
+                                // Then warmachina/player prioritization
+                                bool isWarmachina = o.IsWarMachina();
+                                if (MainSettingsModel.Instance.Pvp_WarmachinaMode == WarmachinaTargetMode.PrioritizeWarmachina && isWarmachina)
+                                    return 2;
+                                if (MainSettingsModel.Instance.Pvp_WarmachinaMode == WarmachinaTargetMode.PrioritizePlayers && !isWarmachina)
+                                    return 2;
+                                if (o.IsDps() || o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp)
+                                    return 1;
+                                return 0;
+                            })
                             .ThenBy(o =>
                             {
                                 var char_o = (Character)o;
@@ -174,6 +191,7 @@ namespace ATB.Utilities
                         if (lowestHpTargets.Any())
                         {
                             newTarget = lowestHpTargets.First();
+
                             var char_target = (Character)newTarget;
                             var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) +
                                            ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
@@ -206,6 +224,20 @@ namespace ATB.Utilities
                             // then by lowest hp
                             var mostTargetedTargets = objs
                                 .OrderByDescending(o =>
+                                {
+                                    // Mounted robots get highest priority
+                                    if (MainSettingsModel.Instance.Pvp_PrioritizeMountedRobots && o.HasAura(MountedStatus))
+                                        return 20; // Highest priority
+
+                                    // Then warmachina/player prioritization
+                                    bool isWarmachina = o.IsWarMachina();
+                                    if (MainSettingsModel.Instance.Pvp_WarmachinaMode == WarmachinaTargetMode.PrioritizeWarmachina && isWarmachina)
+                                        return 10;
+                                    if (MainSettingsModel.Instance.Pvp_WarmachinaMode == WarmachinaTargetMode.PrioritizePlayers && !isWarmachina)
+                                        return 10;
+                                    return 0;
+                                })
+                                .ThenByDescending(o =>
                                     o.WithinCombatReach(5) ? 3 :
                                     o.WithinCombatReach(7) ? 2 :
                                     o.WithinCombatReach(10) ? 1 : 0
@@ -603,6 +635,45 @@ namespace ATB.Utilities
                 && !c.Name.Contains("Falcon")
                 && !c.Name.Contains("Striking Dummy")
                 && !c.Name.Contains("Icebound Tomelith");
+        }
+
+        public static bool IsValidEnemyPvP(GameObject obj)
+        {
+            if (!(obj is Character))
+                return false;
+            var c = (Character)obj;
+
+            bool baseValid = !c.IsMe
+                && !c.IsDead
+                && c.IsValid
+                && c.IsTargetable
+                && c.IsVisible
+                && c.InLineOfSight()
+                && c.CanAttack
+                && !c.HasAnyAura(Invincibility);
+
+            if (!baseValid)
+                return false;
+
+            bool isWarmachina = c.IsWarMachina();
+
+            switch (MainSettingsModel.Instance.Pvp_WarmachinaMode)
+            {
+                case WarmachinaTargetMode.Ignore:
+                    // Ignore all warmachina except Interceptors (which are in combat)
+                    return !isWarmachina || c.Name.Contains("Interceptor");
+
+                case WarmachinaTargetMode.PrioritizeWarmachina:
+                    // Target all warmachina
+                    return true;
+
+                case WarmachinaTargetMode.PrioritizePlayers:
+                    // Target both, but prioritization is handled in ordering logic
+                    return true;
+
+                default:
+                    return !isWarmachina;
+            }
         }
 
         public static bool IsValidAlly(GameObject obj)

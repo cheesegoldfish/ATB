@@ -135,6 +135,15 @@ namespace ATB.Utilities.Extensions
             return gameObject != null && Dps.Contains(gameObject.CurrentJob);
         }
 
+        public static bool IsWarMachina(this GameObject unit)
+        {
+            return unit != null && (unit.Name.Contains("Raven")
+                                || unit.Name.Contains("Falcon")
+                                || unit.Name.Contains("Striking Dummy")
+                                || unit.Name.Contains("Icebound Tomelith")
+                                || unit.Name.Contains("Interceptor"));
+        }
+
         public static bool HealthCheck(this GameObject tar, int healthInt, float healthPercent)
         {
             if (tar == null)

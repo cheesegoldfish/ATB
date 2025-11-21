@@ -30,6 +30,13 @@
                                 <x:Type TypeName="enums:AutoFollowSelection"/>
                         </ObjectDataProvider.MethodParameters>
                 </ObjectDataProvider>
+                <ObjectDataProvider MethodName="GetValues"
+                                    ObjectType="{x:Type sys:Enum}"
+                                    x:Key="WarmachinaTargetMode">
+                        <ObjectDataProvider.MethodParameters>
+                                <x:Type TypeName="enums:WarmachinaTargetMode"/>
+                        </ObjectDataProvider.MethodParameters>
+                </ObjectDataProvider>
         </UserControl.Resources>
 
         <Grid Margin="10"
@@ -204,6 +211,17 @@
                                                           Margin="1,1,1.4,1"
                                                           Style="{DynamicResource ATBCheckbox}"
                                                           IsChecked="{Binding Settings.Pvp_SmartTargeting, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                <ComboBox Tag="Warmachina Target Mode"
+                                                          Margin="2"
+                                                          Style="{DynamicResource ATBComboBox}"
+                                                          SelectedItem="{Binding Settings.Pvp_WarmachinaMode, UpdateSourceTrigger=LostFocus}"
+                                                          ItemsSource="{Binding Source={StaticResource WarmachinaTargetMode}}"
+                                                          HorizontalAlignment="Left"
+                                                          Width="260"/>
+                                                <CheckBox Content="Prioritize Mounted Robots"
+                                                          Margin="1,1,1.4,1"
+                                                          Style="{DynamicResource ATBCheckbox}"
+                                                          IsChecked="{Binding Settings.Pvp_PrioritizeMountedRobots, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                                 <controls:ATBNumeric Margin="2"
                                                                      HorizontalAlignment="Left"
                                                                      Width="260"

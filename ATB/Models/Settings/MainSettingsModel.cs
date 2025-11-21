@@ -25,13 +25,15 @@ namespace ATB.Models
 
         private bool _autoCommenceDuty, _autoDutyNotify, _usePull, _usePause, _useAutoFace, _useAutoTalk, _useAutoQuest, _useAutoCutscene, _useAutoTargeting,
             _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting, _useStickyAuraTargeting,
-            _autoSprint, _autoSprintInSanctuaryOnly, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard, _useQuickStartButton;
+            _autoSprint, _autoSprintInSanctuaryOnly, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard, _useQuickStartButton, _pvpPrioritizeMountedRobots;
 
         private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness;
 
         private double _overlayWidth, _overlayHeight, _overlayX, _overlayY, _overlayOpacity;
 
         private float _maxTargetDistance;
+
+        private WarmachinaTargetMode _pvpWarmachinaMode;
 
         [Setting]
         [DefaultValue(true)]
@@ -57,6 +59,16 @@ namespace ATB.Models
         [DefaultValue(7)]
         public int Pvp_Stickiness
         { get { return _pvpStickiness; } set { _pvpStickiness = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(WarmachinaTargetMode.Ignore)]
+        public WarmachinaTargetMode Pvp_WarmachinaMode
+        { get { return _pvpWarmachinaMode; } set { _pvpWarmachinaMode = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(false)]
+        public bool Pvp_PrioritizeMountedRobots
+        { get { return _pvpPrioritizeMountedRobots; } set { _pvpPrioritizeMountedRobots = value; OnPropertyChanged(); } }
 
         [Setting]
         [DefaultValue(false)]
@@ -358,5 +370,12 @@ namespace ATB.Models
         Green,
         Red,
         Yellow
+    }
+
+    public enum WarmachinaTargetMode
+    {
+        Ignore,
+        PrioritizeWarmachina,
+        PrioritizePlayers
     }
 }
