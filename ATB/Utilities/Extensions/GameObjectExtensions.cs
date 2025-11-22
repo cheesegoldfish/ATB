@@ -137,11 +137,11 @@ namespace ATB.Utilities.Extensions
 
         public static bool IsWarMachina(this GameObject unit)
         {
-            return unit != null && (unit.Name.Contains("Raven")
-                                || unit.Name.Contains("Falcon")
-                                || unit.Name.Contains("Striking Dummy")
-                                || unit.Name.Contains("Icebound Tomelith")
-                                || unit.Name.Contains("Interceptor"));
+            return unit != null && (unit.EnglishName.Contains("Raven")
+                                || unit.EnglishName.Contains("Falcon")
+                                || unit.EnglishName.Contains("Striking Dummy")
+                                || unit.EnglishName.Contains("Icebound Tomelith")
+                                || unit.EnglishName.Contains("Interceptor"));
         }
 
         public static bool HealthCheck(this GameObject tar, int healthInt, float healthPercent)

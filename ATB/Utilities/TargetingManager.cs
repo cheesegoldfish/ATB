@@ -242,8 +242,8 @@ namespace ATB.Utilities
                                     o.WithinCombatReach(7) ? 2 :
                                     o.WithinCombatReach(10) ? 1 : 0
                                 )
-                                .ThenByDescending(o => o.Name.Contains("Interceptor ") ? 3 :
-                                                        o.Name.Contains("Interceptor") ? 2 : 1)
+                                .ThenByDescending(o => o.EnglishName.Contains("Interceptor ") ? 3 :
+                                                        o.EnglishName.Contains("Interceptor") ? 2 : 1)
                                 .ThenByDescending(o => o.HasAura(BattleHigh5) ? 6 :
                                                         o.HasAura(BattleHigh4) ? 5 :
                                                         o.HasAura(BattleHigh3) ? 4 :
@@ -631,10 +631,10 @@ namespace ATB.Utilities
                 && c.InLineOfSight()
                 && c.CanAttack
                 && !c.HasAnyAura(Invincibility)
-                && !c.Name.Contains("Raven")
-                && !c.Name.Contains("Falcon")
-                && !c.Name.Contains("Striking Dummy")
-                && !c.Name.Contains("Icebound Tomelith");
+                && !c.EnglishName.Contains("Raven")
+                && !c.EnglishName.Contains("Falcon")
+                && !c.EnglishName.Contains("Striking Dummy")
+                && !c.EnglishName.Contains("Icebound Tomelith");
         }
 
         public static bool IsValidEnemyPvP(GameObject obj)
@@ -661,7 +661,7 @@ namespace ATB.Utilities
             {
                 case WarmachinaTargetMode.Ignore:
                     // Ignore all warmachina except Interceptors (which are in combat)
-                    return !isWarmachina || c.Name.Contains("Interceptor");
+                    return !isWarmachina || c.EnglishName.Contains("Interceptor");
 
                 case WarmachinaTargetMode.PrioritizeWarmachina:
                     // Target all warmachina
