@@ -28,10 +28,10 @@ namespace ATB.Logic
             return AutoFollowComposite;
         }
 
-        private static async Task<bool> AutoFollowTask()
+        private static Task<bool> AutoFollowTask()
         {
             if (AvoidanceManager.IsRunningOutOfAvoid)
-                return false;
+                return Task.FromResult(false);
 
 
             var result = false;
@@ -39,14 +39,14 @@ namespace ATB.Logic
             switch (MainSettingsModel.Instance.AutoFollowSelection)
             {
                 case AutoFollowSelection.Smart:
-                    result = await FollowSmart();
+                    result = FollowSmart().Result;
                     break;
             }
 
-            return result;
+            return Task.FromResult(result);
         }
 
-        private static async Task<bool> FollowSmart()
+        private static Task<bool> FollowSmart()
         {
             // Perform AutoSprint
             // Perform MountDismount not combat
@@ -64,7 +64,7 @@ namespace ATB.Logic
 
 
 
-            return false;
+            return Task.FromResult(false);
         }
     }
 }

@@ -28,9 +28,9 @@ namespace ATB.Logic
             return AvoidanceComposite;
         }
 
-        private static async Task<bool> AvoidanceTask()
+        private static Task<bool> AvoidanceTask()
         {
-            return false;
+            return Task.FromResult(false);
         }
     }
 }

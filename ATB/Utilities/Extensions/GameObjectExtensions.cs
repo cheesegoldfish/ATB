@@ -16,7 +16,7 @@ namespace ATB.Utilities.Extensions
 
         public static bool ShowPlayerNames = false;
 
-        public static string SafeName(this GameObject obj)
+        public static string SafeDisplayName(this GameObject obj)
         {
             if (obj.IsMe)
             {
@@ -40,6 +40,22 @@ namespace ATB.Utilities.Extensions
         }
 
         #endregion SafeNames
+
+        #region Name Helpers
+
+        /// <summary>
+        /// Gets the name of the object with fallback to Name if EnglishName is null.
+        /// Returns empty string if both are null to avoid null reference exceptions.
+        /// </summary>
+        public static string SafeName(this GameObject obj)
+        {
+            if (obj == null)
+                return string.Empty;
+
+            return !string.IsNullOrEmpty(obj.EnglishName) ? obj.EnglishName : (obj.Name ?? string.Empty);
+        }
+
+        #endregion Name Helpers
 
         internal static bool HasAura(this GameObject unit, uint spell, bool isMyAura = false, double msLeft = 0)
         {
@@ -137,11 +153,18 @@ namespace ATB.Utilities.Extensions
 
         public static bool IsWarMachina(this GameObject unit)
         {
-            return unit != null && (unit.EnglishName.Contains("Raven")
-                                || unit.EnglishName.Contains("Falcon")
-                                || unit.EnglishName.Contains("Striking Dummy")
-                                || unit.EnglishName.Contains("Icebound Tomelith")
-                                || unit.EnglishName.Contains("Interceptor"));
+            if (unit == null)
+                return false;
+
+            var name = unit.SafeName();
+            if (string.IsNullOrEmpty(name))
+                return false;
+
+            return name.Contains("Raven")
+                || name.Contains("Falcon")
+                || name.Contains("Striking Dummy")
+                || name.Contains("Icebound Tomelith")
+                || name.Contains("Interceptor");
         }
 
         public static bool HealthCheck(this GameObject tar, int healthInt, float healthPercent)

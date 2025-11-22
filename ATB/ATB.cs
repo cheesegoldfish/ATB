@@ -21,7 +21,6 @@ namespace ATB
 {
     public class ATB
     {
-        private ATBWindow _form;
         private static int _rbVersion;
         private static DateTime _pulseLimiter;
         private static readonly string VersionPath = Path.Combine(Environment.CurrentDirectory, @"BotBases\ATB\Version.txt");
