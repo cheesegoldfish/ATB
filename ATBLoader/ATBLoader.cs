@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using ff14bot;
@@ -18,6 +19,57 @@ using Newtonsoft.Json.Linq;
 
 namespace ATBLoader
 {
+    /// <summary>
+    /// Collectible AssemblyLoadContext for hot-reloading ATB.dll
+    /// </summary>
+    internal class ATBLoadContext : AssemblyLoadContext
+    {
+        private readonly AssemblyDependencyResolver _resolver;
+
+        public ATBLoadContext(string pluginPath) : base(isCollectible: true)
+        {
+            _resolver = new AssemblyDependencyResolver(pluginPath);
+        }
+
+        protected override Assembly Load(AssemblyName assemblyName)
+        {
+            // Let RebornBuddy assemblies resolve from the main context
+            if (assemblyName.Name == "ff14bot" ||
+                assemblyName.Name == "TreeSharp" ||
+                assemblyName.Name == "GreyMagic" ||
+                assemblyName.Name.StartsWith("RebornBuddy") ||
+                assemblyName.Name.StartsWith("System") ||
+                assemblyName.Name.StartsWith("Microsoft") ||
+                assemblyName.Name == "Newtonsoft.Json" ||
+                assemblyName.Name == "PresentationFramework" ||
+                assemblyName.Name == "PresentationCore" ||
+                assemblyName.Name == "WindowsBase")
+            {
+                return null; // Use default resolution
+            }
+
+            // Try to resolve using the dependency resolver
+            string assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
+            if (assemblyPath != null)
+            {
+                return LoadFromAssemblyPath(assemblyPath);
+            }
+
+            return null;
+        }
+
+        protected override IntPtr LoadUnmanagedDll(string unmanagedDllName)
+        {
+            string libraryPath = _resolver.ResolveUnmanagedDllToPath(unmanagedDllName);
+            if (libraryPath != null)
+            {
+                return LoadUnmanagedDllFromPath(libraryPath);
+            }
+
+            return IntPtr.Zero;
+        }
+    }
+
     public class ATBLoader : BotBase
     {
         // Change this settings to reflect your project!
@@ -33,8 +85,20 @@ namespace ATBLoader
         private static readonly string VersionPath = Path.Combine(Environment.CurrentDirectory, $@"BotBases\{ProjectName}\Version.txt");
         private static readonly string BaseDir = Path.Combine(Environment.CurrentDirectory, $@"BotBases\{ProjectName}");
         private static readonly string ProjectTypeFolder = Path.Combine(Environment.CurrentDirectory, @"BotBases");
-        private static string? _latestVersion;
+
+        // Hot-reload: Load from temp copy so original file isn't locked
+        private static readonly string TempDir = Path.Combine(BaseDir, "Temp");
+        private static readonly string TempAssembly = Path.Combine(TempDir, ProjectAssemblyName);
+
+        private static string _latestVersion;
         private static readonly object Locker = new object();
+
+        // Hot reload support
+        private static FileSystemWatcher _fileWatcher;
+        private static DateTime _lastReloadTime = DateTime.MinValue;
+        private static bool _isReloading = false;
+        private static WeakReference _loadContextRef;
+        private static bool _isTestVersion = false; // Track if we're in test/dev mode
 
         private static volatile bool _loaded;
         private static object Product { get; set; }
@@ -44,6 +108,7 @@ namespace ATBLoader
         private static MethodInfo ButtonFunc { get; set; }
         private static MethodInfo RootFunc { get; set; }
         private static MethodInfo InitFunc { get; set; }
+        private static MethodInfo ShutdownFunc { get; set; }
 
         public override string Name => ProjectName;
 
@@ -183,22 +248,82 @@ namespace ATBLoader
             AppDomain.CurrentDomain.AssemblyResolve += greyMagicHandler;
         }
 
-        private static Assembly LoadAssembly(string path)
+        private static Assembly LoadAssembly(string path, ATBLoadContext context)
         {
             if (!File.Exists(path)) { return null; }
 
             Assembly assembly = null;
-            try { assembly = Assembly.LoadFrom(path); }
+            try
+            {
+                if (_isTestVersion)
+                {
+                    // Test mode: Load from bytes (no file lock!)
+                    byte[] assemblyBytes = File.ReadAllBytes(path);
+
+                    // Load with PDB if available for debugging
+                    var pdbPath = Path.ChangeExtension(path, ".pdb");
+                    if (File.Exists(pdbPath))
+                    {
+                        byte[] pdbBytes = File.ReadAllBytes(pdbPath);
+                        assembly = context.LoadFromStream(new MemoryStream(assemblyBytes), new MemoryStream(pdbBytes));
+                    }
+                    else
+                    {
+                        assembly = context.LoadFromStream(new MemoryStream(assemblyBytes));
+                    }
+                }
+                else
+                {
+                    // Production mode: Load from file path (standard, file will be locked)
+                    assembly = context.LoadFromAssemblyPath(path);
+                }
+            }
             catch (Exception e) { Logging.WriteException(e); }
 
             return assembly;
+        }
+
+        /// <summary>
+        /// Check if we're running a test/dev version (hot-reload enabled)
+        /// </summary>
+        private static bool IsTestVersion()
+        {
+            try
+            {
+                var localVersion = GetLocalVersion();
+                return !string.IsNullOrEmpty(localVersion) && localVersion.StartsWith("test-", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private static object Load()
         {
             RedirectAssembly();
 
-            var assembly = LoadAssembly(ProjectAssembly);
+            // Check if this is a test version (enables hot-reload)
+            _isTestVersion = IsTestVersion();
+
+            if (_isTestVersion)
+            {
+                Log("Test version detected - Hot-reload enabled (loading from bytes, no file lock)");
+
+                // Clean up any old temp files from previous versions
+                CleanupOldTempFiles();
+            }
+            else
+            {
+                Log("Production version - Hot-reload disabled");
+            }
+
+            // Create a new collectible AssemblyLoadContext
+            var loadContext = new ATBLoadContext(ProjectAssembly);
+            _loadContextRef = new WeakReference(loadContext, trackResurrection: true);
+
+            // Load assembly (test mode loads from bytes, production loads from file path)
+            var assembly = LoadAssembly(ProjectAssembly, loadContext);
             if (assembly == null) { return null; }
 
             Type baseType;
@@ -223,6 +348,115 @@ namespace ATBLoader
             return bb;
         }
 
+        /// <summary>
+        /// Hot reload ATB.dll without restarting RebornBuddy
+        /// </summary>
+        private static void ReloadProduct()
+        {
+            lock (Locker)
+            {
+                if (_isReloading)
+                {
+                    Log("Reload already in progress, skipping...");
+                    return;
+                }
+
+                _isReloading = true;
+                bool wasRunning = TreeRoot.IsRunning;
+
+                try
+                {
+                    Log("Hot-reloading ATB.dll...");
+
+                    // Stop TreeRoot completely FIRST
+                    if (TreeRoot.IsRunning)
+                    {
+                        TreeRoot.Stop("Hot-reloading ATB");
+
+                        // Wait for TreeRoot to fully stop
+                        var stopTimeout = DateTime.Now.AddSeconds(5);
+                        while (TreeRoot.IsRunning && DateTime.Now < stopTimeout)
+                        {
+                            System.Threading.Thread.Sleep(100);
+                        }
+
+                        if (TreeRoot.IsRunning)
+                        {
+                            Log("Warning: TreeRoot did not stop cleanly");
+                        }
+                    }
+
+                    // Stop the current instance
+                    if (Product != null)
+                    {
+                        if (StopFunc != null)
+                        {
+                            StopFunc.Invoke(Product, null);
+                        }
+                        if (ShutdownFunc != null)
+                        {
+                            ShutdownFunc.Invoke(Product, null);
+                        }
+                    }
+
+                    // Clear all references to the old assembly
+                    Product = null;
+                    StartFunc = null;
+                    StopFunc = null;
+                    ButtonFunc = null;
+                    RootFunc = null;
+                    InitFunc = null;
+                    ShutdownFunc = null;
+                    _loaded = false;
+
+                    // Unload the old AssemblyLoadContext (releases old temp file lock)
+                    if (_loadContextRef != null && _loadContextRef.IsAlive)
+                    {
+                        var oldContext = _loadContextRef.Target as ATBLoadContext;
+                        if (oldContext != null)
+                        {
+                            oldContext.Unload();
+                        }
+                    }
+
+                    // Force garbage collection to clean up the old assembly
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+
+                    // Small delay before reloading
+                    System.Threading.Thread.Sleep(300);
+
+                    // Load the new version (loads from bytes in test mode, no file lock!)
+                    LoadProduct();
+
+                    Log("Hot-reload complete!");
+
+                    // Restart TreeRoot if it was running before
+                    if (wasRunning && Product != null && !TreeRoot.IsRunning)
+                    {
+                        // TreeRoot.Start() will call StartFunc automatically via the BotBase lifecycle
+                        TreeRoot.Start();
+
+                        // Wait for TreeRoot to start
+                        System.Threading.Thread.Sleep(500);
+
+                        Log("Bot automatically restarted after hot-reload.");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log($"Hot-reload failed: {e.Message}");
+                    Logging.WriteException(e);
+                }
+                finally
+                {
+                    _isReloading = false;
+                    _lastReloadTime = DateTime.Now;
+                }
+            }
+        }
+
         private static void LoadProduct()
         {
             lock (Locker)
@@ -237,6 +471,8 @@ namespace ATBLoader
                 ButtonFunc = Product.GetType().GetMethod("OnButtonPress");
                 RootFunc = Product.GetType().GetMethod("GetRoot");
                 InitFunc = Product.GetType().GetMethod("OnInitialize", new[] { typeof(int) });
+                ShutdownFunc = Product.GetType().GetMethod("OnShutdown");
+
                 if (InitFunc != null)
                 {
 #if RB_CN
@@ -247,6 +483,134 @@ namespace ATBLoader
                     InitFunc.Invoke(Product, new[] { (object)1 });
 #endif
                 }
+
+                // Set up file watcher for hot reload (only in test mode, only once)
+                if (_isTestVersion && _fileWatcher == null)
+                {
+                    SetupFileWatcher();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Set up FileSystemWatcher to detect DLL changes for hot reload
+        /// </summary>
+        private static void SetupFileWatcher()
+        {
+            try
+            {
+                // Watch the original DLL location (not locked because we load from temp)
+                _fileWatcher = new FileSystemWatcher
+                {
+                    Path = BaseDir,
+                    Filter = ProjectAssemblyName,
+                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
+                    EnableRaisingEvents = true
+                };
+
+                _fileWatcher.Changed += OnDllChanged;
+            }
+            catch (Exception e)
+            {
+                Log($"Failed to set up hot-reload watcher: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Clean up old temp files from previous versions (no longer used with byte-loading)
+        /// </summary>
+        private static void CleanupOldTempFiles()
+        {
+            try
+            {
+                // Clean up any temp files from previous versions that used temp file strategy
+                if (!Directory.Exists(TempDir))
+                    return;
+
+                var tempFiles = Directory.GetFiles(TempDir, "ATB_*.dll");
+
+                foreach (var file in tempFiles)
+                {
+                    try
+                    {
+                        File.Delete(file);
+
+                        // Also delete associated PDB
+                        var pdb = Path.ChangeExtension(file, ".pdb");
+                        if (File.Exists(pdb))
+                        {
+                            File.Delete(pdb);
+                        }
+                    }
+                    catch
+                    {
+                        // File might still be locked - ignore
+                    }
+                }
+
+                // Try to delete temp directory if empty
+                try
+                {
+                    if (Directory.GetFiles(TempDir).Length == 0)
+                    {
+                        Directory.Delete(TempDir);
+                    }
+                }
+                catch
+                {
+                    // Ignore if we can't delete the directory
+                }
+            }
+            catch (Exception e)
+            {
+                Log($"Failed to clean up old temp files: {e.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Handle DLL file changes
+        /// </summary>
+        private static void OnDllChanged(object sender, FileSystemEventArgs e)
+        {
+            // Debounce: ignore if already reloading or too soon after last reload
+            if (_isReloading || (DateTime.Now - _lastReloadTime).TotalSeconds < 3)
+            {
+                return;
+            }
+
+            Log($"Detected change in {ProjectAssemblyName}");
+
+            // Disable watcher temporarily to prevent cascade
+            if (_fileWatcher != null)
+            {
+                _fileWatcher.EnableRaisingEvents = false;
+            }
+
+            // Delay slightly to ensure file write is complete
+            System.Threading.Thread.Sleep(500);
+
+            Task.Run(() =>
+            {
+                ReloadProduct();
+
+                // Re-enable watcher after reload
+                if (_fileWatcher != null)
+                {
+                    _fileWatcher.EnableRaisingEvents = true;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Cleanup on disposal
+        /// </summary>
+        public static void Cleanup()
+        {
+            if (_fileWatcher != null)
+            {
+                _fileWatcher.EnableRaisingEvents = false;
+                _fileWatcher.Dispose();
+                _fileWatcher = null;
             }
         }
 
@@ -256,7 +620,7 @@ namespace ATBLoader
             Logging.Write(LogColor, message);
         }
 
-        private static string? GetLocalVersion()
+        private static string GetLocalVersion()
         {
             if (!File.Exists(VersionPath)) return null;
 
@@ -278,7 +642,7 @@ namespace ATBLoader
             _latestVersion = GetLatestVersion().Result;
             var latest = _latestVersion;
 
-            if (local == latest || latest == null || local.StartsWith("pre-"))
+            if (local == latest || latest == null || local.StartsWith("pre-") || local.StartsWith("test-"))
             {
                 LoadProduct();
                 return;
@@ -319,7 +683,7 @@ namespace ATBLoader
             LoadProduct();
         }
 
-        private static async Task<string?> GetLatestVersion()
+        private static async Task<string> GetLatestVersion()
         {
             using var client = new HttpClient();
             HttpResponseMessage response;
@@ -393,7 +757,7 @@ namespace ATBLoader
             return true;
         }
 
-        private static async Task<byte[]?> DownloadLatestVersion()
+        private static async Task<byte[]> DownloadLatestVersion()
         {
             using var client = new HttpClient();
             HttpResponseMessage response;
