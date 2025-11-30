@@ -109,7 +109,7 @@ namespace ATB.Utilities
         {
             if (!MainSettingsModel.Instance.UseAutoTargeting || MainSettingsModel.Instance.AutoTargetSelection == AutoTargetSelection.None) return Task.FromResult(false);
 
-            if (Core.Me.CurrentTarget.HasAnyAura(Invincibility) && Core.Me.InCombat)
+            if (Core.Me.CurrentTarget != null && Core.Me.CurrentTarget.HasAnyAura(Invincibility) && Core.Me.InCombat)
                 Core.Me.ClearTarget();
 
             if (MainSettingsModel.Instance.UseStickyTargeting && Core.Player.HasTarget)
@@ -117,13 +117,14 @@ namespace ATB.Utilities
 
             if (WorldManager.InPvP)
             {
-                if (MainSettingsModel.Instance.Pvp_DetargetInvuln && Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln) && Core.Me.InCombat)
+                if (MainSettingsModel.Instance.Pvp_DetargetInvuln && Core.Me.CurrentTarget != null && Core.Me.CurrentTarget.HasAnyAura(Pvp_Invuln) && Core.Me.InCombat)
                     Core.Me.ClearTarget();
 
-                if (MainSettingsModel.Instance.Pvp_DetargetGuard && Core.Me.CurrentTarget.HasAnyAura(Pvp_Guard) && Core.Me.InCombat)
+                if (MainSettingsModel.Instance.Pvp_DetargetGuard && Core.Me.CurrentTarget != null && Core.Me.CurrentTarget.HasAnyAura(Pvp_Guard) && Core.Me.InCombat)
                     Core.Me.ClearTarget();
 
                 if (MainSettingsModel.Instance.UseStickyAuraTargeting
+                    && Core.Me.CurrentTarget != null
                     && Core.Me.CurrentTarget.HasAnyAura(Pvp_StickyAuras, true))
                     return Task.FromResult(false);
 
@@ -200,11 +201,19 @@ namespace ATB.Utilities
                         {
                             newTarget = lowestHpTargets.First();
 
-                            var char_target = (Character)newTarget;
-                            var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) +
-                                           ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
-                            type = $"Lowest HP {newTarget.CurrentHealthPercent}% (Mana: {char_target.CurrentMana}, Vuln: {vulnScore:F1}%)";
-                            ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness / 2 * 1000;
+                            if (newTarget != null)
+                            {
+                                var char_target = (Character)newTarget;
+                                var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) +
+                                               ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
+                                type = $"Lowest HP {newTarget.CurrentHealthPercent}% (Mana: {char_target.CurrentMana}, Vuln: {vulnScore:F1}%)";
+                                ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness / 2 * 1000;
+                            }
+                            else
+                            {
+                                type = "No valid target";
+                                ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness / 2 * 1000;
+                            }
                         }
                         else
                         {
@@ -286,13 +295,21 @@ namespace ATB.Utilities
                                 });
 
                             newTarget = mostTargetedTargets.FirstOrDefault();
-                            var char_target = (Character)newTarget;
-                            var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) +
-                                           ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
-                            type = hasLargeAlliance
-                                ? $"Large Alliance - HP Based {newTarget.CurrentHealthPercent}% (Vuln: {vulnScore:F1}%)"
-                                : $"Most Targeted {(targetCounts.TryGetValue(newTarget.ObjectId, out var count) ? count : 0)} (Vuln: {vulnScore:F1}%)";
-                            ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness * 1000;
+                            if (newTarget != null)
+                            {
+                                var char_target = (Character)newTarget;
+                                var vulnScore = ((100 - newTarget.CurrentHealthPercent) * 0.4) +
+                                               ((100 - (char_target.CurrentMana * 100.0 / 10000)) * 0.6);
+                                type = hasLargeAlliance
+                                    ? $"Large Alliance - HP Based {newTarget.CurrentHealthPercent}% (Vuln: {vulnScore:F1}%)"
+                                    : $"Most Targeted {(targetCounts.TryGetValue(newTarget.ObjectId, out var count) ? count : 0)} (Vuln: {vulnScore:F1}%)";
+                                ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness * 1000;
+                            }
+                            else
+                            {
+                                type = "No valid target";
+                                ChangeThreshold = MainSettingsModel.Instance.Pvp_Stickiness * 1000;
+                            }
                         }
 
                         if (newTarget != null)
@@ -304,9 +321,9 @@ namespace ATB.Utilities
                                     // Or I don't have a target
                                     || !Core.Me.HasTarget
                                     // Or my target is in sight anymore
-                                    || !Me.CurrentTarget.InLineOfSight()
+                                    || (Me.CurrentTarget != null && !Me.CurrentTarget.InLineOfSight())
                                     // Or my target walked out of range
-                                    || !Me.CurrentTarget.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance + 1)
+                                    || (Me.CurrentTarget != null && !Me.CurrentTarget.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance + 1))
                                 )
                             )
                             {
@@ -322,6 +339,7 @@ namespace ATB.Utilities
             }
 
             if (MainSettingsModel.Instance.UseStickyAuraTargeting
+                && Core.Me.CurrentTarget != null
                 && Core.Me.CurrentTarget.HasAnyAura(StickyAuras, true))
                 return Task.FromResult(false);
 
@@ -413,9 +431,9 @@ namespace ATB.Utilities
                                     // Or I don't have a target
                                     || !Core.Player.HasTarget
                                     // Or my target is in sight anymore
-                                    || !Me.CurrentTarget.InLineOfSight()
+                                    || (Me.CurrentTarget != null && !Me.CurrentTarget.InLineOfSight())
                                     // Or my target walked out of range
-                                    || !Me.CurrentTarget.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance + 3)
+                                    || (Me.CurrentTarget != null && !Me.CurrentTarget.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance + 3))
                                 )
                             )
                             {
