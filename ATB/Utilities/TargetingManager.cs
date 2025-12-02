@@ -51,6 +51,8 @@ namespace ATB.Utilities
         {
             1302, // hallowed
             3039, // undead redemption
+            4096, // pvp Hardened Scales (Viper)
+            4097, // pvp Armored Scales (Viper)
         };
 
         public static readonly uint BattleHigh1 = 2131;

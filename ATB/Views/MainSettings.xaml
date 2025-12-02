@@ -203,7 +203,7 @@
                                                           Margin="1,1,1.4,1"
                                                           Style="{DynamicResource ATBCheckbox}"
                                                           IsChecked="{Binding Settings.Pvp_DetargetGuard, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                                                <CheckBox Content="De-Target Invuln (hallowed,dead)"
+                                                <CheckBox Content="De-Target Invuln (hallowed,dead,viper scales)"
                                                           Margin="1,1,1.4,1"
                                                           Style="{DynamicResource ATBCheckbox}"
                                                           IsChecked="{Binding Settings.Pvp_DetargetInvuln, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
