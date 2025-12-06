@@ -25,7 +25,7 @@ namespace ATB.Models
 
         private bool _autoCommenceDuty, _autoDutyNotify, _usePull, _usePause, _useAutoFace, _useAutoTalk, _useAutoQuest, _useAutoCutscene, _useAutoTargeting,
             _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting, _useStickyAuraTargeting,
-            _autoSprint, _autoSprintInSanctuaryOnly, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard, _useQuickStartButton, _pvpPrioritizeMountedRobots;
+            _autoSprint, _autoSprintInSanctuaryOnly, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard, _useQuickStartButton, _pvpPrioritizeMountedRobots, _pvpAutoTargetStopFlagCaptures;
 
         private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness;
 
@@ -69,6 +69,11 @@ namespace ATB.Models
         [DefaultValue(false)]
         public bool Pvp_PrioritizeMountedRobots
         { get { return _pvpPrioritizeMountedRobots; } set { _pvpPrioritizeMountedRobots = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(true)]
+        public bool Pvp_AutoTargetStopFlagCaptures
+        { get { return _pvpAutoTargetStopFlagCaptures; } set { _pvpAutoTargetStopFlagCaptures = value; OnPropertyChanged(); } }
 
         [Setting]
         [DefaultValue(false)]

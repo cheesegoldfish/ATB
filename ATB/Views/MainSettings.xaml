@@ -222,6 +222,10 @@
                                                           Margin="1,1,1.4,1"
                                                           Style="{DynamicResource ATBCheckbox}"
                                                           IsChecked="{Binding Settings.Pvp_PrioritizeMountedRobots, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                                <CheckBox Content="Prioritize Ovoo/Tomelith Captures"
+                                                          Margin="1,1,1.4,1"
+                                                          Style="{DynamicResource ATBCheckbox}"
+                                                          IsChecked="{Binding Settings.Pvp_AutoTargetStopFlagCaptures, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                                 <controls:ATBNumeric Margin="2"
                                                                      HorizontalAlignment="Left"
                                                                      Width="260"

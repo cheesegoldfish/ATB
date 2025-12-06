@@ -72,6 +72,8 @@ namespace ATB.Utilities
 
         public static readonly uint MountedStatus = 1420;
 
+        public static readonly uint FlagCaptureSpellId = 79; // ovoo/tomelith capture
+
         public static readonly HashSet<string> StickyAuras = new HashSet<string> {
             "wildfire",
         };
@@ -145,6 +147,10 @@ namespace ATB.Utilities
                         }
                     }
 
+                    bool isMelee = PartyDescriptors.IsMelee(Core.Me.CurrentJob);
+                    bool isRanged = PartyDescriptors.IsRanged(Core.Me.CurrentJob);
+
+                    // Single scan: order by flag casters first, then by existing priority logic
                     var objs = GameObjectManager.GameObjects
                         .Where(o =>
                             IsValidEnemyPvP(o)
@@ -154,11 +160,40 @@ namespace ATB.Utilities
                             && !(MainSettingsModel.Instance.Pvp_DetargetInvuln && o.HasAnyAura(Pvp_Invuln))
                             && !(MainSettingsModel.Instance.Pvp_DetargetGuard && o.HasAnyAura(Pvp_Guard))
                         )
-                        .OrderBy(o => o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp ? 0 : o.Distance(Core.Me))
+                        .OrderByDescending(o =>
+                        {
+                            // Flag casters get highest priority if setting is enabled
+                            if (MainSettingsModel.Instance.Pvp_AutoTargetStopFlagCaptures
+                                && ((Character)o).IsCasting
+                                && ((Character)o).CastingSpellId == FlagCaptureSpellId
+                                && (
+                                    (isMelee && o.WithinCombatReach(7))
+                                    || (isRanged && o.WithinCombatReach(25))
+                                ))
+                            {
+                                return 100; // Highest priority
+                            }
+                            return 0;
+                        })
+                        .ThenBy(o => o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp ? 0 : o.Distance(Core.Me))
                         .Take(20);
 
                     if (objs != null && objs.Any())
                     {
+                        // Check if first target is a flag caster - switch immediately without further filtering
+                        var firstTarget = objs.First();
+                        if (MainSettingsModel.Instance.Pvp_AutoTargetStopFlagCaptures
+                            && firstTarget != null
+                            && firstTarget.IsValid
+                            && ((Character)firstTarget).IsCasting
+                            && ((Character)firstTarget).CastingSpellId == FlagCaptureSpellId
+                            && firstTarget != Core.Me.CurrentTarget)
+                        {
+                            firstTarget.Target();
+                            lastTargetChange = DateTime.Now;
+                            return Task.FromResult(false);
+                        }
+
                         // Calculate vulnerability score with weighted mana importance
                         // Mana is weighted at 60%, HP at 40%
                         var lowestHpTargets = objs
