@@ -65,6 +65,7 @@ namespace ATB
                                 && Core.Player.IsAlive
                                 && ExtremeCaution(),
                                 new PrioritySelector(
+                                    DutyManagement.Execute(),
                                     Helpers.Execute(),
                                     TargetingManager.Execute(),
                                     AutoFollow.Execute(),

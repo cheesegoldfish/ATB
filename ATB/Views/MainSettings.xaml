@@ -91,6 +91,10 @@
                                                   Margin="1"
                                                   Style="{DynamicResource ATBCheckbox}"
                                                   IsChecked="{Binding Settings.AutoCommenceDuty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <CheckBox Content="Auto Leave Duty"
+                                                  Margin="1"
+                                                  Style="{DynamicResource ATBCheckbox}"
+                                                  IsChecked="{Binding Settings.AutoLeaveDuty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                         <CheckBox Content="Auto Sprint"
                                                   Margin="1,1,1.4,1"
                                                   Style="{DynamicResource ATBCheckbox}"
@@ -133,6 +137,26 @@
                                                    Margin="20,0,0,5"
                                                    FontSize="10"
                                                    FontStyle="Italic"/>
+
+                                        <TextBlock Style="{DynamicResource ATBTextBlockSection}"
+                                                   Text="Duty Registration"
+                                                   Margin="0,5"/>
+                                        <CheckBox Content="Auto Register Duties"
+                                                  Margin="1"
+                                                  Style="{DynamicResource ATBCheckbox}"
+                                                  IsChecked="{Binding Settings.AutoRegisterDuties, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBlock Text="PvP Duty to Register:"
+                                                  Margin="2,5,2,2"
+                                                  Style="{DynamicResource ATBTextBlockSectionRegular}"/>
+                                        <ComboBox Tag="PvP Duty Selection"
+                                                  Margin="2"
+                                                  Style="{DynamicResource ATBComboBox}"
+                                                  SelectedValue="{Binding Settings.DutyToRegister, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  ItemsSource="{Binding PvPDuties}"
+                                                  DisplayMemberPath="Name"
+                                                  SelectedValuePath="Id"
+                                                  HorizontalAlignment="Left"
+                                                  Width="260"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1">
 
@@ -143,6 +167,13 @@
                                                              MaxValue="5000"
                                                              TextBlockValue="Auto Commence Delay:"
                                                              Value="{Binding Settings.AutoCommenceDelay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <controls:ATBNumeric Margin="2"
+                                                             HorizontalAlignment="Left"
+                                                             Width="260"
+                                                             MinValue="0"
+                                                             MaxValue="300"
+                                                             TextBlockValue="Seconds to Auto Leave Duty:"
+                                                             Value="{Binding Settings.SecondsToAutoLeaveDuty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                                         <controls:ATBNumeric Margin="2"
                                                              HorizontalAlignment="Left"
                                                              Width="260"

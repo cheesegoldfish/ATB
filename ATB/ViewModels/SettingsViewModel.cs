@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Windows.Input;
 using ATB.Commands;
 using ATB.Models;
 using ATB.Utilities;
@@ -29,6 +31,19 @@ namespace ATB.ViewModels
                     }
                 }
                 return _version;
+            }
+        }
+
+        private List<PvPDutyInfo> _pvpDuties;
+        public List<PvPDutyInfo> PvPDuties
+        {
+            get
+            {
+                if (_pvpDuties == null)
+                {
+                    _pvpDuties = PvPDutyHelper.GetSupportedPvPDuties();
+                }
+                return _pvpDuties;
             }
         }
     }

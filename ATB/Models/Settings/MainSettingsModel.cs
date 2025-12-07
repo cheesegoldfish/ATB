@@ -25,9 +25,10 @@ namespace ATB.Models
 
         private bool _autoCommenceDuty, _autoDutyNotify, _usePull, _usePause, _useAutoFace, _useAutoTalk, _useAutoQuest, _useAutoCutscene, _useAutoTargeting,
             _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting, _useStickyAuraTargeting,
-            _autoSprint, _autoSprintInSanctuaryOnly, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard, _useQuickStartButton, _pvpPrioritizeMountedRobots, _pvpAutoTargetStopFlagCaptures;
+            _autoSprint, _autoSprintInSanctuaryOnly, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard, _useQuickStartButton, _pvpPrioritizeMountedRobots, _pvpAutoTargetStopFlagCaptures,
+            _autoLeaveDuty, _autoRegisterDuties;
 
-        private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness;
+        private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness, _secondsToAutoLeaveDuty, _dutyToRegister;
 
         private double _overlayWidth, _overlayHeight, _overlayX, _overlayY, _overlayOpacity;
 
@@ -78,17 +79,37 @@ namespace ATB.Models
         [Setting]
         [DefaultValue(false)]
         public bool AutoDutyNotify
-        { get { return _autoDutyNotify; } set { _autoDutyNotify = value; OnPropertyChanged(); } }
+        { get { return _autoDutyNotify; } set { _autoDutyNotify = value; OnPropertyChanged(); Save(); } }
 
         [Setting]
         [DefaultValue(true)]
         public bool AutoCommenceDuty
-        { get { return _autoCommenceDuty; } set { _autoCommenceDuty = value; OnPropertyChanged(); } }
+        { get { return _autoCommenceDuty; } set { _autoCommenceDuty = value; OnPropertyChanged(); Save(); } }
 
         [Setting]
         [DefaultValue(30)]
         public int AutoCommenceDelay
-        { get { return _autoCommenceDelay; } set { _autoCommenceDelay = value; OnPropertyChanged(); } }
+        { get { return _autoCommenceDelay; } set { _autoCommenceDelay = value; OnPropertyChanged(); Save(); } }
+
+        [Setting]
+        [DefaultValue(false)]
+        public bool AutoLeaveDuty
+        { get { return _autoLeaveDuty; } set { _autoLeaveDuty = value; OnPropertyChanged(); Save(); } }
+
+        [Setting]
+        [DefaultValue(0)]
+        public int SecondsToAutoLeaveDuty
+        { get { return _secondsToAutoLeaveDuty; } set { _secondsToAutoLeaveDuty = value; OnPropertyChanged(); Save(); } }
+
+        [Setting]
+        [DefaultValue(false)]
+        public bool AutoRegisterDuties
+        { get { return _autoRegisterDuties; } set { _autoRegisterDuties = value; OnPropertyChanged(); Save(); } }
+
+        [Setting]
+        [DefaultValue(0)]
+        public int DutyToRegister
+        { get { return _dutyToRegister; } set { _dutyToRegister = value; OnPropertyChanged(); Save(); } }
 
         [Setting]
         [DefaultValue(true)]
