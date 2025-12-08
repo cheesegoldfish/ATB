@@ -72,7 +72,11 @@ namespace ATB.Utilities
 
         public static readonly uint MountedStatus = 1420;
 
-        public static readonly uint FlagCaptureSpellId = 79; // ovoo/tomelith capture
+        public static readonly List<uint> FlagCaptureSpellIds = new List<uint>
+        {
+            79, // ovoo capture
+            58  // tomelith capture
+        };
 
         public static readonly HashSet<string> StickyAuras = new HashSet<string> {
             "wildfire",
@@ -165,7 +169,7 @@ namespace ATB.Utilities
                             // Flag casters get highest priority if setting is enabled
                             if (MainSettingsModel.Instance.Pvp_AutoTargetStopFlagCaptures
                                 && ((Character)o).IsCasting
-                                && ((Character)o).CastingSpellId == FlagCaptureSpellId
+                                && FlagCaptureSpellIds.Contains(((Character)o).CastingSpellId)
                                 && (
                                     (isMelee && o.WithinCombatReach(7))
                                     || (isRanged && o.WithinCombatReach(25))
@@ -186,7 +190,7 @@ namespace ATB.Utilities
                             && firstTarget != null
                             && firstTarget.IsValid
                             && ((Character)firstTarget).IsCasting
-                            && ((Character)firstTarget).CastingSpellId == FlagCaptureSpellId
+                            && FlagCaptureSpellIds.Contains(((Character)firstTarget).CastingSpellId)
                             && firstTarget != Core.Me.CurrentTarget)
                         {
                             firstTarget.Target();
