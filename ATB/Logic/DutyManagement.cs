@@ -168,11 +168,11 @@ namespace ATB.Logic
             }
 
             // Check if in combat
-            if (Core.Me.InCombat)
-            {
-                LogMessage("Cannot leave: Still in combat");
-                return false;
-            }
+            // if (Core.Me.InCombat)
+            // {
+            //     LogMessage("Cannot leave: Still in combat");
+            //     return false;
+            // }
 
             // Check if we can leave
             if (!DutyManager.CanLeaveActiveDuty)
