@@ -695,7 +695,7 @@ namespace ATB.Utilities
         public static void Assist(Character c)
         {
             var target = GameObjectManager.GetObjectByObjectId(c.CurrentTargetId);
-            if (target != null && target.IsTargetable && target.IsValid && target.CanAttack)
+            if (target != null && IsValidEnemy(target))
             {
                 Logger.ATBLog(@"Assisting " + c.SafeDisplayName());
                 target.Target();
@@ -715,7 +715,8 @@ namespace ATB.Utilities
                 && c.InLineOfSight()
                 && c.CanAttack
                 && !c.HasAnyAura(Invincibility)
-                && !c.IsWarMachina();
+                && !c.IsWarMachina()
+                && !c.SafeName().Contains("Striking Dummy");
         }
 
         public static bool IsValidEnemyPvP(GameObject obj)
@@ -723,6 +724,11 @@ namespace ATB.Utilities
             if (!(obj is Character))
                 return false;
             var c = (Character)obj;
+            var name = c.SafeName();
+
+            // Never target Striking Dummy in PvP
+            if (name.Contains("Striking Dummy"))
+                return false;
 
             bool baseValid = !c.IsMe
                 && !c.IsDead
@@ -742,7 +748,7 @@ namespace ATB.Utilities
             {
                 case WarmachinaTargetMode.Ignore:
                     // Ignore all warmachina except Interceptors (which are in combat)
-                    return !isWarmachina || c.SafeName().Contains("Interceptor");
+                    return !isWarmachina || name.Contains("Interceptor");
 
                 case WarmachinaTargetMode.PrioritizeWarmachina:
                     // Target all warmachina
