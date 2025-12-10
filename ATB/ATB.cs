@@ -60,16 +60,22 @@ namespace ATB
         {
             get
             {
-                return _root ?? (_root = new Decorator(r => TreeTick()
-                                && !MainSettingsModel.Instance.UsePause
-                                && Core.Player.IsAlive
-                                && ExtremeCaution(),
-                                new PrioritySelector(
-                                    DutyManagement.Execute(),
-                                    Helpers.Execute(),
-                                    TargetingManager.Execute(),
-                                    AutoFollow.Execute(),
-                                    Battle.Execute()))
+                return _root ?? (_root = new PrioritySelector(
+                                    // DutyManagement should run even when dead (for auto-leave)
+                                    new Decorator(r => TreeTick()
+                                        && !MainSettingsModel.Instance.UsePause
+                                        && ExtremeCaution(),
+                                        DutyManagement.Execute()),
+                                    // Other logic requires player to be alive
+                                    new Decorator(r => TreeTick()
+                                        && !MainSettingsModel.Instance.UsePause
+                                        && Core.Player.IsAlive
+                                        && ExtremeCaution(),
+                                        new PrioritySelector(
+                                            Helpers.Execute(),
+                                            TargetingManager.Execute(),
+                                            AutoFollow.Execute(),
+                                            Battle.Execute())))
                     );
             }
         }

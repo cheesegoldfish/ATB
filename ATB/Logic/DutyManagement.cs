@@ -146,7 +146,7 @@ namespace ATB.Logic
                 var timeSinceTreasureOpened = DateTime.Now - _lastTreasureOpened.Value;
                 if (timeSinceTreasureOpened.TotalSeconds < 3)
                 {
-                    LogMessage("Waiting for loot window...");
+                    // Just wait silently, don't log
                     return false;
                 }
                 else
