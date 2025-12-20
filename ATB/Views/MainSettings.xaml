@@ -178,6 +178,13 @@
                                                              HorizontalAlignment="Left"
                                                              Width="260"
                                                              MinValue="0"
+                                                             MaxValue="300"
+                                                             TextBlockValue="Seconds to Auto Register Duty:"
+                                                             Value="{Binding Settings.SecondsToAutoRegisterDuty, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <controls:ATBNumeric Margin="2"
+                                                             HorizontalAlignment="Left"
+                                                             Width="260"
+                                                             MinValue="0"
                                                              MaxValue="240"
                                                              TextBlockValue="TPS Adjust"
                                                              Value="{Binding Settings.TpsAdjust, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>

@@ -21,6 +21,9 @@ namespace ATB.Logic
         // Timer tracking for auto-leave delay
         private static DateTime? _autoLeaveExpiration;
 
+        // Timer tracking for auto-register delay
+        private static DateTime? _autoRegisterExpiration;
+
         // Timer tracking for auto-register throttling
         private static DateTime? _lastRegisterAttempt;
 
@@ -236,16 +239,27 @@ namespace ATB.Logic
         private static bool ShouldRegisterDuty()
         {
             if (!Core.IsInGame)
+            {
+                _autoRegisterExpiration = null;
                 return false;
+            }
 
             if (CommonBehaviors.IsLoading)
+            {
+                _autoRegisterExpiration = null;
                 return false;
+            }
 
             if (!MainSettingsModel.Instance.AutoRegisterDuties)
+            {
+                _autoRegisterExpiration = null;
                 return false;
+            }
 
             if (DutyManager.QueueState != QueueState.None)
             {
+                // Reset timer when already in queue
+                _autoRegisterExpiration = null;
                 // Only log if state changed or if we're not in an instance (to avoid spam while in dungeon)
                 if (_lastQueueState != DutyManager.QueueState && !DutyManager.InInstance)
                 {
@@ -272,19 +286,46 @@ namespace ATB.Logic
             if (duty == null)
             {
                 Logger.ATBLog($"Auto Register: Duty with ID {MainSettingsModel.Instance.DutyToRegister} not found!");
+                _autoRegisterExpiration = null;
                 return false;
             }
 
-            // Throttle registration attempts (every 5 seconds)
-            var now = DateTime.Now;
-            if (!_lastRegisterAttempt.HasValue || now >= _lastRegisterAttempt.Value.AddSeconds(5))
+            // Handle timing - if 0 seconds, register immediately
+            if (MainSettingsModel.Instance.SecondsToAutoRegisterDuty == 0)
             {
-                _lastRegisterAttempt = now;
-                Logger.ATBLog($"Auto Register: Attempting to queue '{duty.EnglishName}' (ID: {duty.Id}, IsInDutyFinder: {duty.IsInDutyFinder})");
-                return true;
+                // Reset timer if delay is disabled
+                _autoRegisterExpiration = null;
+                // Throttle registration attempts (every 5 seconds)
+                var now = DateTime.Now;
+                if (!_lastRegisterAttempt.HasValue || now >= _lastRegisterAttempt.Value.AddSeconds(5))
+                {
+                    _lastRegisterAttempt = now;
+                    Logger.ATBLog($"Auto Register: Attempting to queue '{duty.EnglishName}' (ID: {duty.Id}, IsInDutyFinder: {duty.IsInDutyFinder})");
+                    return true;
+                }
+                return false;
             }
 
-            return false;
+            // Initialize timer if not set
+            if (!_autoRegisterExpiration.HasValue)
+            {
+                _autoRegisterExpiration = DateTime.Now.AddSeconds(MainSettingsModel.Instance.SecondsToAutoRegisterDuty);
+                Logger.ATBLog($"Auto Register: Starting {MainSettingsModel.Instance.SecondsToAutoRegisterDuty} second countdown before queueing '{duty.EnglishName}'...");
+                return false;
+            }
+
+            // Check if timer has expired
+            if (DateTime.Now >= _autoRegisterExpiration.Value)
+            {
+                Logger.ATBLog($"Auto Register: Countdown finished, attempting to queue '{duty.EnglishName}'");
+                _autoRegisterExpiration = null;
+                return true;
+            }
+            else
+            {
+                // Still waiting, don't log every tick to avoid spam
+                return false;
+            }
         }
 
         private static RunStatus RegisterDuty()
@@ -297,6 +338,7 @@ namespace ATB.Logic
                 if (duty == null)
                 {
                     Logger.ATBLog("Selected duty not found!");
+                    _autoRegisterExpiration = null;
                     return RunStatus.Failure;
                 }
 
@@ -311,11 +353,13 @@ namespace ATB.Logic
                 });
 
                 Logger.ATBLog($"Queued duty: {duty.EnglishName}");
+                _autoRegisterExpiration = null;
                 return RunStatus.Success;
             }
             catch (ArgumentException e)
             {
                 Logger.ATBLog($"Error queuing duty: {e.Message}");
+                _autoRegisterExpiration = null;
                 return RunStatus.Failure;
             }
         }

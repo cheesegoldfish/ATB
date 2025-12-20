@@ -28,7 +28,7 @@ namespace ATB.Models
             _autoSprint, _autoSprintInSanctuaryOnly, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard, _useQuickStartButton, _pvpPrioritizeMountedRobots, _pvpAutoTargetStopFlagCaptures,
             _autoLeaveDuty, _autoRegisterDuties;
 
-        private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness, _secondsToAutoLeaveDuty, _dutyToRegister;
+        private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness, _secondsToAutoLeaveDuty, _secondsToAutoRegisterDuty, _dutyToRegister;
 
         private double _overlayWidth, _overlayHeight, _overlayX, _overlayY, _overlayOpacity;
 
@@ -97,7 +97,7 @@ namespace ATB.Models
         { get { return _autoLeaveDuty; } set { _autoLeaveDuty = value; OnPropertyChanged(); Save(); } }
 
         [Setting]
-        [DefaultValue(0)]
+        [DefaultValue(30)]
         public int SecondsToAutoLeaveDuty
         { get { return _secondsToAutoLeaveDuty; } set { _secondsToAutoLeaveDuty = value; OnPropertyChanged(); Save(); } }
 
@@ -105,6 +105,11 @@ namespace ATB.Models
         [DefaultValue(false)]
         public bool AutoRegisterDuties
         { get { return _autoRegisterDuties; } set { _autoRegisterDuties = value; OnPropertyChanged(); Save(); } }
+
+        [Setting]
+        [DefaultValue(30)]
+        public int SecondsToAutoRegisterDuty
+        { get { return _secondsToAutoRegisterDuty; } set { _secondsToAutoRegisterDuty = value; OnPropertyChanged(); Save(); } }
 
         [Setting]
         [DefaultValue(0)]
