@@ -7,13 +7,13 @@ namespace ATB.Utilities
     /// <summary>
     /// Helper class for PvP duty selection
     /// Uses explicit name matching to filter supported PvP duties
-    /// Supports: Daily Challenge: Frontline, Hidden Gorge, Crystalline Conflict (Casual Match), and Crystalline Conflict (Ranked Match)
+    /// Supports: Daily Challenge: Frontline, Hidden Gorge, Crystalline Conflict (Casual Match), Crystalline Conflict (Ranked Match), and Worqor Chirteh (Triumph)
     /// </summary>
     internal static class PvPDutyHelper
     {
         /// <summary>
         /// Gets a list of supported PvP duties using explicit name matching
-        /// Only includes: Frontline, Crystalline Conflict (Casual Match), Crystalline Conflict (Ranked Match), Hidden Gorge, and Astragalos
+        /// Only includes: Frontline, Crystalline Conflict (Casual Match), Crystalline Conflict (Ranked Match), Hidden Gorge, and Worqor Chirteh (Triumph)
         /// </summary>
         /// <returns>List of PvP duty IDs and names</returns>
         public static List<PvPDutyInfo> GetSupportedPvPDuties()
@@ -26,7 +26,8 @@ namespace ATB.Utilities
                 "Daily Challenge: Frontline",
                 "Hidden Gorge",
                 "Crystalline Conflict (Casual Match)",
-                "Crystalline Conflict (Ranked Match)"
+                "Crystalline Conflict (Ranked Match)",
+                "Worqor Chirteh (Triumph)"
             };
 
             // Get all duties that match our supported names, ordered by the list above
@@ -73,7 +74,8 @@ namespace ATB.Utilities
                 "Daily Challenge: Frontline",
                 "Hidden Gorge",
                 "Crystalline Conflict (Casual Match)",
-                "Crystalline Conflict (Ranked Match)"
+                "Crystalline Conflict (Ranked Match)",
+                "Worqor Chirteh (Triumph)"
             };
 
             var name = duty.EnglishName;
