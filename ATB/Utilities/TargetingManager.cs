@@ -53,6 +53,7 @@ namespace ATB.Utilities
             3039, // undead redemption
             4096, // pvp Hardened Scales (Viper)
             4097, // pvp Armored Scales (Viper)
+            1240, // sam chiten / (lb maker)
         };
 
         public static readonly uint BattleHigh1 = 2131;
