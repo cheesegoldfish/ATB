@@ -103,6 +103,7 @@ namespace ATB.Utilities
         private static readonly Composite TargetingManagerComposite;
         private static DateTime _pulseLimiter;
         private static DateTime lastTargetChange = DateTime.Now;
+        private static DateTime _pvpPulseLimiter;
 
         static TargetingManager()
         {
@@ -152,6 +153,10 @@ namespace ATB.Utilities
                         }
                     }
 
+                    if (DateTime.Now < _pvpPulseLimiter)
+                        return Task.FromResult(false);
+                    _pvpPulseLimiter = DateTime.Now.AddMilliseconds(250);
+
                     bool isMelee = PartyDescriptors.IsMelee(Core.Me.CurrentJob);
                     bool isRanged = PartyDescriptors.IsRanged(Core.Me.CurrentJob);
 
@@ -161,9 +166,9 @@ namespace ATB.Utilities
                             IsValidEnemyPvP(o)
                             && ((Character)o).InCombat
                             && o.WithinCombatReach(MainSettingsModel.Instance.MaxTargetDistance)
-                            && o.InLineOfSight()
                             && !(MainSettingsModel.Instance.Pvp_DetargetInvuln && o.HasAnyAura(Pvp_Invuln))
                             && !(MainSettingsModel.Instance.Pvp_DetargetGuard && o.HasAnyAura(Pvp_Guard))
+                            && o.InLineOfSight()
                         )
                         .OrderByDescending(o =>
                         {
@@ -181,7 +186,7 @@ namespace ATB.Utilities
                             return 0;
                         })
                         .ThenBy(o => o.CurrentHealthPercent <= MainSettingsModel.Instance.Pvp_SmartTargetingHp ? 0 : o.Distance(Core.Me))
-                        .Take(20);
+                        .ToList();
 
                     if (objs != null && objs.Any())
                     {
@@ -277,10 +282,17 @@ namespace ATB.Utilities
                             // Check if we have 7 or more alliance members
                             bool hasLargeAlliance = allies.Count() >= 7;
 
-                            // prioritize things i've debuffed already
-                            // then things the team has debuffed
-                            // then by who has the most targets (only if not in large alliance)
-                            // then by lowest hp
+                            var myDebuffs = new Dictionary<uint, int>();
+                            var allDebuffs = new Dictionary<uint, int>();
+                            foreach (var candidate in objs)
+                            {
+                                if (candidate != null && candidate.IsValid)
+                                {
+                                    myDebuffs[candidate.ObjectId] = candidate.CountDebuffs(true);
+                                    allDebuffs[candidate.ObjectId] = candidate.CountDebuffs(false);
+                                }
+                            }
+
                             var mostTargetedTargets = objs
                                 .Where(o => o != null && o.IsValid)
                                 .OrderByDescending(o =>
@@ -325,8 +337,8 @@ namespace ATB.Utilities
                                                         o.HasAura(BattleHigh3) ? 4 :
                                                         o.HasAura(BattleHigh2) ? 3 :
                                                         o.HasAura(BattleHigh1) ? 2 : 0)
-                                .ThenByDescending(o => o.CountDebuffs(true))
-                                .ThenByDescending(o => o.CountDebuffs(false))
+                                .ThenByDescending(o => myDebuffs.TryGetValue(o.ObjectId, out var mc) ? mc : 0)
+                                .ThenByDescending(o => allDebuffs.TryGetValue(o.ObjectId, out var ac) ? ac : 0)
                                 .ThenByDescending(o => hasLargeAlliance ? 0 : (targetCounts.TryGetValue(o.ObjectId, out var count) ? count : 0))
                                 .ThenBy(o =>
                                 {
@@ -775,11 +787,10 @@ namespace ATB.Utilities
                 && c.IsTargetable
                 && c.IsVisible
                 && !c.CanAttack
-                && c.InLineOfSight()
                 && c.Type == GameObjectType.Pc;
         }
 
-        private static readonly FrameCachedObject<IEnumerable<Character>> _allianceMembers = new(() => GameObjectManager.GetObjectsOfType<BattleCharacter>().Where(i => i != null && i.IsValid).Where(IsValidAlly));
+        private static readonly FrameCachedObject<IEnumerable<Character>> _allianceMembers = new(() => GameObjectManager.GetObjectsOfType<BattleCharacter>().Where(i => i != null && i.IsValid).Where(IsValidAlly).ToList());
 
         public static bool PulseCheck()
         {
