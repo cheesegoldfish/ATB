@@ -81,7 +81,6 @@ namespace ATBLoader
         private static readonly Color LogColor = Colors.LawnGreen;
 
         private static readonly string ProjectAssembly = Path.Combine(Environment.CurrentDirectory, $@"BotBases\{ProjectName}\{ProjectAssemblyName}");
-        private static readonly string GreyMagicAssembly = Path.Combine(Environment.CurrentDirectory, @"GreyMagic.dll");
         private static readonly string VersionPath = Path.Combine(Environment.CurrentDirectory, $@"BotBases\{ProjectName}\Version.txt");
         private static readonly string BaseDir = Path.Combine(Environment.CurrentDirectory, $@"BotBases\{ProjectName}");
         private static readonly string ProjectTypeFolder = Path.Combine(Environment.CurrentDirectory, @"BotBases");
@@ -238,14 +237,6 @@ namespace ATBLoader
             };
 
             AppDomain.CurrentDomain.AssemblyResolve += handler;
-
-            ResolveEventHandler greyMagicHandler = (sender, args) =>
-            {
-                var requestedAssembly = new AssemblyName(args.Name);
-                return requestedAssembly.Name != "GreyMagic" ? null : Assembly.LoadFrom(GreyMagicAssembly);
-            };
-
-            AppDomain.CurrentDomain.AssemblyResolve += greyMagicHandler;
         }
 
         private static Assembly LoadAssembly(string path, ATBLoadContext context)
