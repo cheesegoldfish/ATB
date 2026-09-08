@@ -26,9 +26,12 @@ namespace ATB.Models
         private bool _autoCommenceDuty, _autoDutyNotify, _usePull, _usePause, _useAutoFace, _useAutoTalk, _useAutoQuest, _useAutoCutscene, _useAutoTargeting,
             _useSmartPull, _useSmartFollow, _useExtremeCaution, _useAutoTpsAdjust, _outputToEcho, _useOverlay, _useToastMessages, _hideOverlayWhenRunning, _useStickyTargeting, _useStickyAuraTargeting,
             _autoSprint, _autoSprintInSanctuaryOnly, _pvpDetargetInvuln, _pvpSmartTargeting, _pvpDetargetGuard, _useQuickStartButton, _pvpPrioritizeMountedRobots, _pvpAutoTargetStopFlagCaptures,
-            _autoLeaveDuty, _autoRegisterDuties;
+            _autoLeaveDuty, _autoRegisterDuties, _autoAcceptRevive, _autoTrade, _autoHandoverRequestItems, _autoPillion;
 
-        private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness, _secondsToAutoLeaveDuty, _secondsToAutoRegisterDuty, _dutyToRegister;
+        private int _autoCommenceDelay, _tpsAdjust, _overlayFontSize, _pvpSmartTargetingHp, _pvpStickiness, _secondsToAutoLeaveDuty, _secondsToAutoRegisterDuty, _dutyToRegister,
+            _pillionCooldown;
+
+        private float _pillionRange;
 
         private double _overlayWidth, _overlayHeight, _overlayX, _overlayY, _overlayOpacity;
 
@@ -255,6 +258,42 @@ namespace ATB.Models
         [DefaultValue(false)]
         public bool AutoSprintInSanctuaryOnly
         { get { return _autoSprintInSanctuaryOnly; } set { _autoSprintInSanctuaryOnly = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(false)]
+        public bool AutoAcceptRevive
+        { get { return _autoAcceptRevive; } set { _autoAcceptRevive = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(false)]
+        public bool AutoTrade
+        { get { return _autoTrade; } set { _autoTrade = value; OnPropertyChanged(); } }
+
+        [Setting]
+        [DefaultValue(false)]
+        public bool AutoHandoverRequestItems
+        { get { return _autoHandoverRequestItems; } set { _autoHandoverRequestItems = value; OnPropertyChanged(); } }
+
+        /// <summary>Ride pillion on any party member sitting on a mount that takes passengers.</summary>
+        [Setting]
+        [DefaultValue(false)]
+        public bool AutoPillion
+        { get { return _autoPillion; } set { _autoPillion = value; OnPropertyChanged(); } }
+
+        /// <summary>How close a mounted party member has to be before we try to board them.</summary>
+        [Setting]
+        [DefaultValue(6f)]
+        public float PillionRange
+        { get { return _pillionRange; } set { _pillionRange = value; OnPropertyChanged(); } }
+
+        /// <summary>
+        /// Seconds to stay off mounts after deliberately hopping off one. Being dropped because the host
+        /// dismounted does not start a cooldown.
+        /// </summary>
+        [Setting]
+        [DefaultValue(30)]
+        public int PillionCooldown
+        { get { return _pillionCooldown; } set { _pillionCooldown = value; OnPropertyChanged(); } }
 
         [JsonIgnore]
         private List<string> _combatRoutineList;

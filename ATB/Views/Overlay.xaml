@@ -10,9 +10,9 @@
         <Grid>
             <Viewbox Stretch="Uniform" Width="{Binding Instance.OverlaySize}">
                 <Grid>
-                    <Border Background="Black" CornerRadius="10" Opacity="{Binding Settings.OverlayOpacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <StackPanel Margin="5">
-                        <TextBlock Text="{Binding Instance.IsPausedString}" FontFamily="Georgia" FontWeight="Bold" FontSize="16">
+                    <Border Background="Black" CornerRadius="12" Opacity="{Binding Settings.OverlayOpacity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <StackPanel Margin="10,8,10,8">
+                        <TextBlock Text="{Binding Instance.IsPausedString}" FontFamily="Georgia" FontWeight="Bold" FontSize="22">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Style.Triggers>

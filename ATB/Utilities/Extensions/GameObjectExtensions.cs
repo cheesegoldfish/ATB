@@ -4,6 +4,10 @@ using ff14bot.Managers;
 using ff14bot.Objects;
 using System.Collections.Generic;
 using System.Linq;
+using System;
+using Clio.Utilities;
+using ff14bot.Helpers;
+using Clio.Common;
 
 namespace ATB.Utilities.Extensions
 {
@@ -145,6 +149,18 @@ namespace ATB.Utilities.Extensions
             return gameObject != null && Healers.Contains(gameObject.CurrentJob);
         }
 
+        public static bool IsRanged(this GameObject tar)
+        {
+            var gameObject = tar as Character;
+            return gameObject != null && Ranged.Contains(gameObject.CurrentJob);
+        }
+
+        public static bool IsMelee(this GameObject tar)
+        {
+            var gameObject = tar as Character;
+            return gameObject != null && Melee.Contains(gameObject.CurrentJob);
+        }
+
         public static bool IsDps(this GameObject tar)
         {
             var gameObject = tar as Character;
@@ -206,6 +222,29 @@ namespace ATB.Utilities.Extensions
             ClassJobType.WhiteMage,
             ClassJobType.Astrologian,
             ClassJobType.Sage
+        };
+
+        private static readonly List<ClassJobType> Ranged = new List<ClassJobType>()
+        {
+            ClassJobType.Thaumaturge,
+            ClassJobType.BlackMage,
+            ClassJobType.Machinist,
+            ClassJobType.RedMage,
+            ClassJobType.Dancer,
+            ClassJobType.Pictomancer
+        };
+
+        private static readonly List<ClassJobType> Melee = new List<ClassJobType>()
+        {
+            ClassJobType.Lancer,
+            ClassJobType.Dragoon,
+            ClassJobType.Pugilist,
+            ClassJobType.Monk,
+            ClassJobType.Ninja,
+            ClassJobType.Rogue,
+            ClassJobType.Reaper,
+            ClassJobType.Samurai,
+            ClassJobType.Viper
         };
 
         private static readonly List<ClassJobType> Dps = new List<ClassJobType>()
@@ -303,6 +342,45 @@ namespace ATB.Utilities.Extensions
         public static bool WithinCombatReach(this GameObject source, float distance)
         {
             return source.EffectiveCombatDistance(Core.Me) <= distance;
+        }
+
+        /// <summary>
+        /// Checks if the target GameObject is within the player's field of view (45 degrees left or right).
+        /// </summary>
+        /// <param name="target">The target GameObject to check</param>
+        /// <returns>True if the target is within the player's view</returns>
+        public static bool InView(this GameObject target)
+        {
+            if (target == null)
+                return false;
+
+            if (target == Core.Me)
+                return true;
+
+            return target.RadiansFromPlayerHeading() < 0.78539f; //This is Pi/4 radians, or 45 degrees left or right
+        }
+
+        /// <summary>
+        /// Calculates the angular difference in radians between the player's heading and the direction to the target.
+        /// </summary>
+        /// <param name="target">The target GameObject</param>
+        /// <returns>The angular difference in radians</returns>
+        public static float RadiansFromPlayerHeading(this GameObject target)
+        {
+            var playerLocation = Core.Me.Location;
+            var playerHeading = GameSettingsManager.FaceTargetOnAction ?
+                MathEx.NormalizeRadian(MathHelper.CalculateHeading(playerLocation, Core.Me.CurrentTarget.Location) + (float)Math.PI)
+                :
+                Core.Me.Heading;
+            var targetLocation = target.Location;
+            var d = Math.Abs(MathEx.NormalizeRadian(playerHeading - MathEx.NormalizeRadian(MathHelper.CalculateHeading(playerLocation, targetLocation) + (float)Math.PI)));
+
+            if (d > Math.PI)
+            {
+                d = Math.Abs(d - 2 * (float)Math.PI);
+            }
+
+            return d;
         }
 
         #endregion Helpers

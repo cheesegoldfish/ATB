@@ -61,7 +61,16 @@ namespace ATB.Views
     {
         public static bool ATBEnemyOverlayIsVisible;
 
-        private static readonly ATBEnemyOverlayUiComponent ATBOverlayComponent = new ATBEnemyOverlayUiComponent(true);
+        // Not readonly - must be recreatable for hot-reload to work correctly
+        private static ATBEnemyOverlayUiComponent _overlayComponent;
+        
+        private static ATBEnemyOverlayUiComponent ATBOverlayComponent
+        {
+            get
+            {
+                return _overlayComponent ??= new ATBEnemyOverlayUiComponent(true);
+            }
+        }
 
         public static void Start()
         {
@@ -78,9 +87,16 @@ namespace ATB.Views
             if (!Core.OverlayManager.IsActive)
                 return;
 
-            Core.OverlayManager.RemoveUIComponent(ATBOverlayComponent);
+            if (_overlayComponent != null)
+            {
+                Core.OverlayManager.RemoveUIComponent(_overlayComponent);
+            }
             FormManager.SaveFormInstances();
             ATBEnemyOverlayIsVisible = false;
+            
+            // Reset component so it gets recreated with fresh XAML bindings on next Start()
+            // This is critical for hot-reload - the old component references types from the unloaded assembly
+            _overlayComponent = null;
         }
     }
 
@@ -99,6 +115,8 @@ namespace ATB.Views
                 if (_control != null)
                     return _control;
 
+                // Create fresh Overlay UserControl - this ensures XAML bindings
+                // reference types from the current assembly (important for hot-reload)
                 var overlayUc = new Overlay();
 
                 _control = new OverlayControl
@@ -119,6 +137,15 @@ namespace ATB.Views
 
                 return _control;
             }
+        }
+
+        /// <summary>
+        /// Clears the cached control so it will be recreated on next access.
+        /// Used during hot-reload to ensure fresh XAML bindings.
+        /// </summary>
+        internal void ResetControl()
+        {
+            _control = null;
         }
     }
 }

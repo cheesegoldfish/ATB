@@ -9,6 +9,10 @@ using ff14bot.RemoteWindows;
 using Microsoft.VisualBasic.Logging;
 using System.Threading.Tasks;
 using TreeSharp;
+using System;
+using System.Linq;
+using ff14bot.Objects;
+using ff14bot.Behavior;
 
 namespace ATB.Logic
 {
@@ -35,23 +39,178 @@ namespace ATB.Logic
 
         private static async Task<bool> HelpersMethod()
         {
+            // Auto Skip Cutscene
             if (MainSettingsModel.Instance.UseAutoCutscene)
             {
-                if (QuestLogManager.InCutscene)
+                if (await ExecuteAutoSkipCutscene())
+                    return true;
+            }
+
+            // Auto Accept Revive
+            if (MainSettingsModel.Instance.AutoAcceptRevive)
+            {
+                if (ExecuteAutoAcceptRevive())
+                    return true;
+            }
+
+            // Auto Trade
+            if (MainSettingsModel.Instance.AutoTrade)
+            {
+                if (await ExecuteAutoTrade())
+                    return true;
+            }
+
+            // Auto Sprint
+            if (MainSettingsModel.Instance.AutoSprint)
+            {
+                if (ExecuteAutoSprint())
+                    return true;
+            }
+
+            // Auto Talk
+            if (MainSettingsModel.Instance.UseAutoTalk)
+            {
+                if (ExecuteAutoTalk())
+                    return true;
+            }
+
+            // Auto Handover Request Items
+            if (MainSettingsModel.Instance.AutoHandoverRequestItems)
+            {
+                if (await ExecuteAutoHandoverRequestItems())
+                    return true;
+            }
+
+            // Auto Quest
+            if (MainSettingsModel.Instance.UseAutoQuest)
+            {
+                if (ExecuteAutoQuest())
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool ExecuteAutoAcceptRevive()
+        {
+            if (Core.Me.IsDead && Core.Me.HasAura(148) && SelectYesno.IsOpen)
+            {
+                var str = Core.Memory.ReadStringUTF8(new IntPtr(SelectYesno.___Elements[0].Data));
+                if (str.Contains("的救助吗？") || str.Contains("Accept Raise from ") || str.Contains("からの蘇生を受けますか？"))
                 {
-                    if (AgentCutScene.Instance.CanSkip && !SelectString.IsOpen)
+                    ClientGameUiRevive.Revive();
+                    Logger.ATBLog("Accepting Revive...");
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static bool TradeOpen => RaptureAtkUnitManager.GetWindowByName("Trade") != null;
+        private static bool ContextMenuOpened => RaptureAtkUnitManager.GetWindowByName("ContextMenu") != null;
+        private static bool HasValidTradeTarget => Core.Me.HasTarget && Core.Target is Character c && !c.IsMe && c.Type == GameObjectType.Pc &&
+                                                   !DutyManager.InInstance && c.IsWithinInteractRange;
+
+        private static async Task<bool> ExecuteAutoTrade()
+        {
+            if (TradeOpen)
+            {
+                if (Request.IsOpen && Request.HandOverButtonClickable)
+                {
+                    Request.HandOver();
+                    return true;
+                }
+
+                if (HasValidTradeTarget)
+                {
+                    if (InputNumeric.IsOpen)
                     {
-                        AgentCutScene.Instance.PromptSkip();
-                        if (await Coroutine.Wait(600, () => SelectString.IsOpen))
-                        {
-                            SelectString.ClickSlot(0);
-                            await Coroutine.Sleep(1000);
-                        }
+                        InputNumeric.Ok((uint)InputNumeric.Field.MaxValue);
+                        await Coroutine.Wait(1000, () => !InputNumeric.IsOpen);
+                        RaptureAtkUnitManager.GetWindowByName("Trade").SendAction(1, 3, 0);
+                        return true;
+                    }
+
+                    if (ContextMenuOpened)
+                    {
+                        RaptureAtkUnitManager.GetWindowByName("ContextMenu").SendAction(3, 3, 0, 3, 0, 3, 1);
+                        return true;
+                    }
+
+                    if (SelectYesno.IsOpen)
+                    {
+                        SelectYesno.Yes();
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (Trade.TradeStage == 3)
+                    {
+                        RaptureAtkUnitManager.GetWindowByName("Trade").SendAction(1, 3, 0);
+                        return true;
+                    }
+
+                    if (SelectYesno.IsOpen)
+                    {
+                        SelectYesno.Yes();
+                        return true;
                     }
                 }
             }
+            else
+            {
+                if (HasValidTradeTarget && ContextMenuOpened)
+                {
+                    RaptureAtkUnitManager.GetWindowByName("ContextMenu").SendAction(3, 3, 0, 3, 2, 4, 0);
+                    return true;
+                }
+            }
 
-            // Use Stellar Sprint in Sinus Ardorum zone if enabled
+            return false;
+        }
+
+        private static async Task<bool> ExecuteAutoHandoverRequestItems()
+        {
+            var ShopExchangeDialog = RaptureAtkUnitManager.GetWindowByName("ShopExchangeItemDialog");
+            if (ShopExchangeDialog != null)
+            {
+                ShopExchangeDialog.SendAction(1, 3, 0);
+                Logger.ATBLog("Click ShopExchangeItemDialog Yes");
+                return true;
+            }
+
+            var GrandCompanySupplyReward = RaptureAtkUnitManager.GetWindowByName("GrandCompanySupplyReward");
+            if (GrandCompanySupplyReward != null)
+            {
+                GrandCompanySupplyReward.SendAction(1, 3, 0);
+                Logger.ATBLog("Click GrandCompanySupplyReward Yes");
+                return true;
+            }
+
+            if (Request.IsOpen)
+            {
+                try
+                {
+                    if (await CommonTasks.HandOverRequestedItems(false))
+                    {
+                        Request.HandOver();
+                        Logger.ATBLog("Handing over request items...");
+                        return true;
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    Logger.ATBLog("We don't have the required amount of a requested item.");
+                    return false;
+                }
+            }
+
+            return false;
+        }
+
+        private static bool ExecuteAutoSprint()
+        {
             if (MainSettingsModel.Instance.AutoSprint
                 && WorldManager.ZoneId == SinusArdorumZoneId
                 && ActionManager.IsSprintReady
@@ -60,8 +219,8 @@ namespace ATB.Logic
                 && !WorldManager.InPvP)
             {
                 ActionManager.Sprint();
+                return true;
             }
-            // Use regular Sprint in other zones
             else if (MainSettingsModel.Instance.AutoSprint
                 && ActionManager.IsSprintReady
                 && MovementManager.IsMoving
@@ -69,60 +228,63 @@ namespace ATB.Logic
                 && !WorldManager.InPvP
                 && (!MainSettingsModel.Instance.AutoSprintInSanctuaryOnly || WorldManager.InSanctuary)
                 && WorldManager.ZoneId != SinusArdorumZoneId)
-                ActionManager.Sprint();
-
-            if (MainSettingsModel.Instance.UseAutoTalk)
             {
-                if (Core.Me.IsAlive)
-                    if (SelectYesno.IsOpen)
-                        SelectYesno.ClickYes();
+                ActionManager.Sprint();
+                return true;
+            }
+            return false;
+        }
+
+        private static bool ExecuteAutoTalk()
+        {
+            if (Core.Me.IsAlive)
+            {
+                if (SelectYesno.IsOpen)
+                {
+                    SelectYesno.ClickYes();
+                    return true;
+                }
 
                 if (Talk.DialogOpen)
+                {
                     Talk.Next();
+                    return true;
+                }
+            }
+            return false;
+        }
 
-                //if (Request.IsOpen)
-                //{
-                //    Logger.ATBLog("Handing over any item(s) in your Key Items.");
-                //    foreach (var s in InventoryManager.GetBagByInventoryBagId(InventoryBagId.KeyItems))
-                //    {
-                //        s.Handover();
-                //        Logger.ATBLog(s.EnglishName);
-                //        await Coroutine.Wait(250, () => Request.HandOverButtonClickable);
-                //        if (Request.HandOverButtonClickable) { break; }
-                //    }
-
-                //    Logger.ATBLog("Handing over any item(s) in your Inventory.");
-                //    foreach (var s in InventoryManager.FilledSlots)
-                //    {
-                //        s.Handover();
-                //        Logger.ATBLog(s.EnglishName);
-                //        await Coroutine.Wait(250, () => Request.HandOverButtonClickable);
-                //        if (Request.HandOverButtonClickable) { break; }
-                //    }
-
-                //    if (Request.HandOverButtonClickable) { Request.HandOver(); }
-
-                //    Logger.ATBLog("Handing over any item(s) in your Armory.");
-                //    foreach (var s in InventoryManager.FilledArmorySlots)
-                //    {
-                //        s.Handover();
-                //        Logger.ATBLog(s.EnglishName);
-                //        await Coroutine.Wait(250, () => Request.HandOverButtonClickable);
-                //        if (Request.HandOverButtonClickable) { break; }
-                //    }
-
-                //    if (Request.HandOverButtonClickable) { Request.HandOver(); }
-                //    else { await Coroutine.Wait(3000, () => !Request.IsOpen); }
-                //}
+        private static bool ExecuteAutoQuest()
+        {
+            if (JournalAccept.IsOpen)
+            {
+                JournalAccept.Accept();
+                return true;
             }
 
-            if (MainSettingsModel.Instance.UseAutoQuest)
+            if (JournalResult.IsOpen && JournalResult.ButtonClickable)
             {
-                if (JournalAccept.IsOpen)
-                    JournalAccept.Accept();
+                JournalResult.Complete();
+                return true;
+            }
 
-                if (JournalResult.IsOpen)
-                    JournalResult.Complete();
+            return false;
+        }
+
+        private static async Task<bool> ExecuteAutoSkipCutscene()
+        {
+            if (QuestLogManager.InCutscene)
+            {
+                if (AgentCutScene.Instance.CanSkip && !SelectString.IsOpen)
+                {
+                    AgentCutScene.Instance.PromptSkip();
+                    if (await Coroutine.Wait(600, () => SelectString.IsOpen))
+                    {
+                        SelectString.ClickSlot(0);
+                        await Coroutine.Sleep(1000);
+                        return true;
+                    }
+                }
             }
             return false;
         }

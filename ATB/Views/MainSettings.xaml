@@ -39,6 +39,9 @@
                 </ObjectDataProvider>
         </UserControl.Resources>
 
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      MaxHeight="700">
         <Grid Margin="10"
               HorizontalAlignment="Center">
                 <StackPanel Margin="10">
@@ -103,6 +106,40 @@
                                                   Margin="1,1,1.4,1"
                                                   Style="{DynamicResource ATBCheckbox}"
                                                   IsChecked="{Binding Settings.AutoSprintInSanctuaryOnly, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <CheckBox Content="Auto Accept Revive"
+                                                  Margin="1"
+                                                  Style="{DynamicResource ATBCheckbox}"
+                                                  IsChecked="{Binding Settings.AutoAcceptRevive, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <CheckBox Content="Auto Trade"
+                                                  Margin="1"
+                                                  Style="{DynamicResource ATBCheckbox}"
+                                                  IsChecked="{Binding Settings.AutoTrade, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <CheckBox Content="Auto Handover Request Items"
+                                                  Margin="1"
+                                                  Style="{DynamicResource ATBCheckbox}"
+                                                  IsChecked="{Binding Settings.AutoHandoverRequestItems, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <CheckBox Content="Auto Pillion"
+                                                  Margin="1"
+                                                  Style="{DynamicResource ATBCheckbox}"
+                                                  IsChecked="{Binding Settings.AutoPillion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                  ToolTip="Automatically ride pillion when a party member is on a mount that takes passengers and you are in range. Dismounts your own mount to board theirs."/>
+                                        <controls:ATBFloat Margin="20,2,2,2"
+                                                           HorizontalAlignment="Left"
+                                                           Width="260"
+                                                           MinValue="1"
+                                                           MaxValue="30"
+                                                           Increment="0.5"
+                                                           TextBlockValue="Pillion Range:"
+                                                           Value="{Binding Settings.PillionRange, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                           ToolTip="How close a mounted party member must be before boarding is attempted (default: 6). Raising this causes attempts the client may refuse for distance."/>
+                                        <controls:ATBNumeric Margin="20,2,2,2"
+                                                             HorizontalAlignment="Left"
+                                                             Width="260"
+                                                             MinValue="0"
+                                                             MaxValue="600"
+                                                             TextBlockValue="Pillion Cooldown (s):"
+                                                             Value="{Binding Settings.PillionCooldown, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                             ToolTip="After you hop off a mount, wait this many seconds before boarding again (default: 30). Being dropped because the host dismounted does not start a cooldown."/>
 
                                         <TextBlock Style="{DynamicResource ATBTextBlockSection}"
                                                    Text="Config"
@@ -112,6 +149,15 @@
                                                   Style="{DynamicResource ATBCheckbox}"
                                                   IsChecked="{Binding Settings.UseOverlay, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                   Command="{Binding OverlayViewUpdate}"/>
+                                        <controls:ATBFloat Margin="20,2,2,2"
+                                                           HorizontalAlignment="Left"
+                                                           Width="260"
+                                                           MinValue="50"
+                                                           MaxValue="500"
+                                                           Increment="10"
+                                                           TextBlockValue="Overlay Size:"
+                                                           Value="{Binding Settings.OverlayFontSize, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                           ToolTip="Controls the size of the overlay window (default: 75). Increase for larger text."/>
                                         <CheckBox Content="Show Toast Messages"
                                                   Margin="1"
                                                   Style="{DynamicResource ATBCheckbox}"
@@ -290,4 +336,5 @@
                         </Grid>
                 </StackPanel>
         </Grid>
+        </ScrollViewer>
 </UserControl>

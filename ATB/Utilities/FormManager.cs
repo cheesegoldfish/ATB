@@ -37,6 +37,23 @@ namespace ATB.Utilities
             Form.Show();
         }
 
+        /// <summary>
+        /// Closes all ATB forms and overlays. Called during hot-reload so UI is recreated with fresh
+        /// types from the new assembly; otherwise XAML bindings (especially enum ComboBoxes via
+        /// ObjectDataProvider) keep referencing types from the unloaded assembly.
+        /// </summary>
+        public static void CloseAllForms()
+        {
+            if (_form != null)
+            {
+                try { _form.Close(); } catch { }
+                _form = null;
+            }
+
+            if (OverlayLogic.ATBEnemyOverlayIsVisible)
+                OverlayLogic.Stop();
+        }
+
         internal static void OverlayToggle()
         {
             if (!TreeRoot.IsRunning) return;

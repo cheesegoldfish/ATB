@@ -47,6 +47,9 @@ namespace ATB
         {
             FormManager.SaveFormInstances();
             HotkeyManager.UnregisterAllHotkeys();
+
+            // Close all UI so it is recreated with fresh types on hot-reload.
+            FormManager.CloseAllForms();
         }
 
         public Composite GetRoot()
@@ -74,6 +77,7 @@ namespace ATB
                                         new PrioritySelector(
                                             Helpers.Execute(),
                                             TargetingManager.Execute(),
+                                            AutoPillion.Execute(),
                                             AutoFollow.Execute(),
                                             Battle.Execute())))
                     );
