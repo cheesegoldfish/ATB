@@ -46,6 +46,7 @@ namespace ATB.Utilities
                 case ClassJobType.Viper:
                 case ClassJobType.Pictomancer:
                 case ClassJobType.BlueMage:
+                case ClassJobType.BeastMaster:
                     return true;
 
                 default:
@@ -67,6 +68,7 @@ namespace ATB.Utilities
                 case ClassJobType.Samurai:
                 case ClassJobType.Reaper:
                 case ClassJobType.Viper:
+                case ClassJobType.BeastMaster:
                     return true;
 
                 default:

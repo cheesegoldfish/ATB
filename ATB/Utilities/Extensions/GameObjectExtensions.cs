@@ -244,7 +244,8 @@ namespace ATB.Utilities.Extensions
             ClassJobType.Rogue,
             ClassJobType.Reaper,
             ClassJobType.Samurai,
-            ClassJobType.Viper
+            ClassJobType.Viper,
+            ClassJobType.BeastMaster
         };
 
         private static readonly List<ClassJobType> Dps = new List<ClassJobType>()
@@ -266,7 +267,8 @@ namespace ATB.Utilities.Extensions
             ClassJobType.Dancer,
             ClassJobType.Samurai,
             ClassJobType.Viper,
-            ClassJobType.Pictomancer
+            ClassJobType.Pictomancer,
+            ClassJobType.BeastMaster
         };
 
         public static IEnumerable<BattleCharacter> PartyMembers

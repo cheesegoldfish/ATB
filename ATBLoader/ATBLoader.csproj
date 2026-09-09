@@ -25,6 +25,6 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="RebornBuddy.ReferenceAssemblies" Version="1.0.902" />
+		<PackageReference Include="RebornBuddy.ReferenceAssemblies" Version="1.0.913" />
 	</ItemGroup>
 </Project>
